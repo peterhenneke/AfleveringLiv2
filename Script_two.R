@@ -9,12 +9,9 @@ library(latex2exp)
 
 options(scipen = 9999, digits = 5)
 theme_set(theme_bw())
-<<<<<<< HEAD
-options(pager = "cat")
-options(width = 10)
+# options(pager = "cat")
+# options(width = 10)
 options(max.print = 10)
-=======
->>>>>>> ad703449c4a936152c87b6504f434610a94f8047
 
 # data
 
@@ -28,12 +25,7 @@ mu_t <- approxfun(x = mortality$Age, y = mortality$Intensity, method = "linear",
 
 # Parameters
 
-<<<<<<< HEAD
 r <- 0.02 
-=======
-# Parameter definitions from the provided table
-r <- 0.02
->>>>>>> ad703449c4a936152c87b6504f434610a94f8047
 alpha <- 0.04
 sigma <- 0.13
 m <- 70
@@ -165,12 +157,7 @@ simulated_path %>%
   xlab("t") +
   ylab("Account value (in millions)")
 
-<<<<<<< HEAD
 simulated_path$Account_Value
 
-simulated_path
-
-=======
-# Jeg tjekker git
->>>>>>> ad703449c4a936152c87b6504f434610a94f8047
-
+simulated_path %>%
+  filter(Time == 70)
