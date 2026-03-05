@@ -8,10 +8,22 @@
     "editor.quickSuggestions": {
       "comments": "off",
       "strings": "off",
-      "other": "off"
+      "other": "on"
     },
-    "editor.suggest.enabled": false,
+    "editor.suggest.enabled": true,
+    "editor.tabCompletion": "on",
     "editor.parameterHints.enabled": false,
-    "editor.inlayHints.enabled": false
+    "editor.inlayHints.enabled": false,
+    "editor.defaultFormatter": "REditorSupport.r"
+  },
+  "r.rterm.windows": "C:\\Program Files\\R\\R-4.5.0\\bin\\R.exe",
+  "r.lsp.debug": false,
+  "r.lsp.diagnostics": false,
+  "r.bracketedPaste": true,
+  "r.plot.useHttpgd": true,
+  "r.width": 120,
+  "[R]": {
+    "editor.inlineSuggest.enabled": false,
+    "editor.suggest.enabled": false
   }
 }
