@@ -1,0 +1,8037 @@
+Life insurance mathematics II
+Lecture notes for
+Topics in Life–insurance (Liv2)
+Mogens Bladt and Jamaal Ahmad
+Draft, February 25, 2026
+Contents
+Notation 3
+Chapter 1. Product integration 5
+1. Definition, existence and uniqueness 6
+2. Properties of the product integral 10
+3. Numerical computation of product integrals 19
+Chapter 2. Markov jump processes 21
+1. Markov jump processes 21
+2. The strong Markov property 28
+Chapter 3. A model for stochastic interest rates 31
+1. Recap on hazard rates 31
+2. Phase–type distributions 32
+3. Markovian interest rates 38
+4. Estimation of phase–type distributions 42
+5. Estimation of PH bond models 48
+Chapter 4. Multi–state Markov models with Markovian interest rates 55
+1. Markovian interest rates 55
+2. The general setup 56
+3. Reserves under Markovian interest rates 58
+4. Equivalence premium 62
+5. Higher order moments with stochastic interest rates 63
+Chapter 5. Semi–Markov models 69
+1. Basic properties 69
+2. Delayed partial differential equations for the transitions 75
+3. The life–insurance model 77
+4. Matrix form of the integral equation and its unique solution 83
+5. An extended product integral 87
+6. The Van Loan formulae 90
+7. Equivalence premium 95
+8. Higher order moments 95
+Chapter 6. Random benefits and higher order moments 101
+1. Random setup 101
+2. The distribution of undiscounted benefits 101
+3. Undiscounted moments 103
+4. Discounted moments 105
+5. Derivative securities 108
+1
+2 CONTENTS
+6. The unit-link reserve 112
+Bibliographic notes 115
+Bibliography 117
+Appendix A. R code for spouse model 119
+Appendix B. A short guide to fitting Markovian interest rate models 121
+Notation
+-A AA={aij}: Matrices are denoted capital letters, and their corresponding elements
+by the corresponding unbold, lower case letter.
+-x xx: Vectors are denoted by lower case bold letters, and are their elements by the
+corresponding unbold letters,x j. All vectors with roman letters are column vectors,
+while all vectors with greek letters are row vectors.
+-•: Schur or Hadamard matrix product, which is an entry–wise matrix product:
+AAA•BBB={aijbij}.
+-∆ ∆∆(xxx): Diagonal matrix which has the vectorxxxas diagonal.
+-⊗: Kronecker product between arbitrary matrices,AAA⊗BBB={aijBBB}.
+-⊕: Kronecker sum for square matrices,AAA⊕BBB=AAA⊗III+III⊗BBB.
+-A AA′: Matrix or vector transpose.
+-e ee: the vector of ones,eee= (1,1,...,1)′, of adequate dimension.
+-A AA(x) ={aij(x)}: A matrix function, i.e. a matrix of functionsaij(x).
+- ∏t
+s(III+AAA(x)dx: Product integral of a matrix function.
+-p ij(s,t): transition probabilities, p. 22.
+-P PP(s,t): Transition (probability) matrix,PPP(s,t) ={pij(s,t)}.
+-P i(·): Conditional distribution givenX0 =i, i.e.P i(A) =P(A|X0 =i).
+-b i(t): payment rates.
+-b ij(t): Lump sum payments upon transition.
+-B BB(t): Matrix of lump sum payments.
+-b bb(t): Vector containing the payment rates.
+-Λ ΛΛ(t): Intensity matrix (function) of a time–inhomogeneous Markov process.
+-Λ ΛΛ 1(t): Transition rates which cause lump sum payments.
+-Λ ΛΛ 0(t): Transition rates causing no lump sum payments.
+-R RR(t): Reward matrix,RRR(t) = ΛΛΛ(t)•BBB(t) + ∆∆∆(bbb(t)).
+-C CC(k)(t): Matrices containing expected values of powers of payments.
+-m (k)
+ij (s,t): Partial moments.
+-m mm(k)(s,t): Partial moment matrix.
+-m mm(k)
+r (s,t): Matrix of reduced moments.
+-v ij(s,t): Discounted partial moments.
+-V VV(s,t): Matrix of discounted partial moments.
+-V VV(t): Matrix of (partial, state–wise prospective) reserves.
+-RS ij(t): Risk sums.
+-δ ij: Kronecker delta, equals 1 ifi=jand zero otherwise.
+-P(X∈s): Short notation for the density function ofXevaluated ins.
+3
+
+CHAPTER 1
+Product integration
+Many functions and objects in mathematics are symbols for something that cannot be com-
+puted explicitly. Take, for example, the exponential function,f(x) = exp(λx),λ∈R, which
+can be defined as the unique solution to the differential equation,
+f′(x) =λf(x), f(0) = 1.
+The exponential function appears in almost any branch of mathematics, and it has a lot of
+nice properties. Therefore it deserves its own symbol, usually exp(x) or e x, which can then
+be used as building blocks in further derivations and expressions in mathematics.
+More generally, we could consider the functionfwith solution
+f′(x) =λ(x)f(x), f(0) = 1.(1)
+This is a linear differential equation with a variable coefficient. The solution is given by
+f(x) = exp
+(∫ x
+0
+λ(u)du
+)
+.
+Hence it can be expressed by the former exponential function and an integral of the variable
+coefficients.
+In the following we will extend the latter to linear systems of ordinary differential equations
+(ODE) with variable coefficients,
+YYY′(t) =YYY(t)AAA(t),YYY(0) =III,(2)
+whereYYY(t) is ap×pmatrix function,AAA(t) is ap×pmatrix coefficient andIIIdenotes the
+identity matrix (of adequate order, herep×p). This is just a matrix version of (1).
+The unique solution, which has a number of nice properties, can be used extensively in
+the theory of time–inhomogeneous Markov processes for finding transition probabilities (Ko-
+mogorov) and in applications towards life–insurance for computing reserves (Thiele) and
+higher order moments of future payments (Hattendorff). Hence this solution derserves a
+symbol, called the product integral.
+Most texts on multistate Markov models in life insurance deal with the system of differential
+equations directly instead of collecting them into matrix form and without using their generic
+solution (the product integral). The use of the product integral, however, allows for a much
+simplified notion and more transparent derivations.
+5
+6 1. PRODUCT INTEGRATION
+1. Definition, existence and uniqueness
+Definition 1.1:LetAAA={aij}be a matrix. Then we define
+|AAA|={|aij|}.
+IfAAA1 ={a1
+ij}andAAA2 ={a2
+ij}are two matrices, then we write
+AAA1≤AAA2 ⇐⇒∀i,j: a1
+ij≤a2
+ij.
+We notice that|DDD|in the preceeding definition isnota matrix norm, but only a convenient
+notation for applying the absolute value elementwise of a matrix.
+We remind the reader about the exponential of a (square) matrix,A AA, which can e.g. be
+defined in terms of the Taylor expansion
+Definition 1.2:The exponential of a square matrix,A AAis defined by
+exp(AAA) =
+∞∑
+n=0
+AAAn
+n!.
+This definition is based on simply to plug–in a square matrix into a Taylor expansion for
+the exponential distribution. This can be done safely (i.e. is well–defined) as the following
+lemma states.
+Lemma 1.3.For any matrixAAA, the matrix exponential exists and is finite.
+Proof.LetAAAbe anp×pmatrix and let|·|p denote the Eucledian norm inR p. Then we
+use the induced matrix norm
+∥AAA∥= sup
+xxx∈Rp
+|AAAxxx|p
+|xxx|p
+= sup
+xxx∈Rp:|xxx|p=1
+|AAAxxx|p.
+Since
+|AAABBBxxx|p
+|xxx|p
+=|AAABBBxxx|p
+|BBBxxx|p
+|BBBxxx|p
+|xxx|p
+≤
+(
+sup
+xxx∈Rp
+|AAABBBxxx|
+|BBBxxx|
+) (
+sup
+xxx∈Rp
+|BBBxxx|p
+|xxx|p
+)
+≤
+
+ sup
+yyy∈Rp
+|AAAyyy|p
+|yyy|p
+
+
+(
+sup
+xxx∈Rp
+|BBBxxx|p
+|xxx|p
+)
+=∥AAA∥∥BBB∥,
+we have have that
+∥AAABBB∥≤∥AAA∥∥BBB∥
+for any matricesp×pmatricesAAAandBBB.
+In particular, AAAn≤∥AAA∥n.
+1. DEFINITION, EXISTENCE AND UNIQUENESS 7
+LetN∈N. Then by the triangle inequality (which works for any norm and hence also the
+matrix norm)
+
+N∑
+n=0
+AAAn
+n!
+
+≤
+N∑
+n=0
+∥AAA∥n
+n! = exp(∥AAA∥)<∞.
+This hold for allN, and hence the matrix series converges absolutely.□
+We now turn to existence and uniqueness of solutions to (2).
+Theorem 1.4(Uniqueness).Consider the inhomogeneous system of linear differential
+equations
+YYY′(t) =YYY(t)AAA(t), YYY(s) =CCC(3)
+whereYYY(t),AAA(t)andCCCaren×nmatrices whereAAA(t)is continuous in a certain region
+[x0,x]∋s,t. Then(3)has at most one solution.
+Proof.LetYYY 1(t) andYYY 2(t) denote two solutions, and let
+YYY(t) =YYY 1(t)−YYY 2(t).
+ThenYYY(t) is a solution to
+YYY′(t) =YYY(t)AAA(t), YYY(s) = 000,
+where 000 denotes the null matrix. Let
+KKK= sup
+x0≤t≤x
+|AAA(t)|andGGG= sup
+x0≤t≤x
+|YYY(t)|,
+where the suprema are applied entrywise. Since bothA AAandYYYare continuous (YYYis even
+differentiable), the suprema exist. SinceYYY(s) = 000,
+YYY(t) =
+∫ t
+s
+YYY(s)AAA(s)ds
+so
+⏐⏐YYY(t)
+⏐⏐≤
+∫ t
+s
+|YYY(u)||AAA(u)|du≤|t−s|GGGKKK≤|x−x0|GGGKKK,
+Then,
+|YYY(t)| ≤
+∫ t
+s
+|YYY(u)||AAA(u)|du
+≤
+∫ t
+s
+(u−s)GGGKKK|AAA(u)|du
+= 1
+2(t−s)2GGGKKK2
+≤1
+2(x−x0)2GGGKKK2.
+Iterating
+|YYY(t)| ≤1
+k!(t−s)kGGGKKKk≤1
+k!(x−x0)kGGGKKKk (4)
+for anyk∈N.
+8 1. PRODUCT INTEGRATION
+For any square matrix we recall that
+exp(KKK(x−x0)) =
+∞∑
+k=0
+(x−x0)k
+k! KKKk,
+which always exists, which then implies that
+(x−x0)k
+k! GGGKKKk→000
+ask→∞. Together with (4), this implies that
+|YYY(t)|≡0.
+□
+Next we turn to existence. Going back to the originalY YY(t), satisfying
+YYY′(t) =YYY(t)AAA(t), YYY(s) =CCC,
+we get by integration
+YYY(t) =CCC+
+∫ t
+s
+YYY(u)AAA(u)du,(5)
+which is an equivalent integral equation.
+Theorem 1.5(Existence).Let
+YYY 0(t) =CCC, YYYn(t) =
+∫ t
+s
+YYYn−1(u)AAA(u)du.
+Then the matrix function
+YYY(t) =
+∞∑
+k=0
+YYYk(t) (6)
+converges uniformly and absolutely on finite intervals, and solves the differential equa-
+tion
+YYY′(t) =YYY(t)AAA(t), YYY(s) =CCC.
+Proof.First we prove absolute and uniform convergence of the series. Again we taket∈
+[x0,x] for some fixed interval. Again we letKKK= supx0≤t≤x|AAA(t)|, so that|AAA(u)|≤KKKfor all
+u∈[x0,x]. Since|YYY 0(t)|=|CCC|, we get that
+|YYY 1(t)|=
+⏐⏐⏐⏐⏐
+∫ t
+s
+YYY 0(u)AAA(u)du
+⏐⏐⏐⏐⏐≤
+∫ t
+s
+|YYY 0(u)||AAA(u)|du≤|CCC|KKK(t−s).
+In general,
+|YYYn(t)|≤1
+n!(t−s)n|CCC|KKKn.
+Sinces,t∈[x0,x], thent−s≤x−x0 so that
+|YYYn(t)|≤1
+n!(x−x0)n|CCC|KKKn<∞
+1. DEFINITION, EXISTENCE AND UNIQUENESS 9
+as well. But then
+∞∑
+n=0
+|YYYn(t)|≤|CCC|
+∞∑
+n=0
+(x−x0)nKKKn
+n! =|CCC|exp(KKK(x−x0))<∞.
+Hence the series
+YYY(t) =
+∞∑
+n=0
+YYYn(t)
+converges absolutely and uniformly on [x 0,x]. Finally we conclude that
+YYY(t) =Y YY 0(t) +
+∞∑
+k=1
+YYYk(t)
+=CCC+
+∞∑
+k=1
+∫ t
+s
+YYYk−1(u)AAA(u)du
+=CCC+
+∫ t
+s
+∞∑
+k=1
+YYYk−1(u)AAA(u)du(unif. conv.)
+=CCC+
+∫ t
+s
+YYY(u)AAA(u)du.
+□
+Definition 1.6:For a matrix functionAAA(x) we define the product integral
+t∏
+s
+(III+AAA(x)dx)
+as the unique solutionYYY(t) to
+YYY′(t) =YYY(t)AAA(t), YYY(s) =III(7)
+or, equivalently, to
+YYY(t) =III+
+∫ t
+s
+YYY(u)AAA(u)du.(8)
+From the construction (6), we immediately get the alternative representation of the product
+integral.
+Corollary 1.7(Peano represenation).
+t∏
+s
+(III+AAA(u)du) =
+∞∑
+n=0
+∫ t
+s
+∫ x1
+s
+···
+∫ xn−1
+s
+AAA(xn)AAA(xn−1)···AAA(x1)dxndxn−1···dx1
+=I II+
+∫ t
+s
+AAA(x1)dx1 +
+∞∑
+n=2
+∫ t
+s
+∫ x1
+s
+···
+∫ xn−1
+s
+AAA(xn)AAA(xn−1)···AAA(x1)dxndxn−1···dx1
+10 1. PRODUCT INTEGRATION
+Corollary 1.8.The solution to the differential equation
+YYY′(t) =YYY(t)AAA(t), YYY(s) =CCC
+or, equivalently, to
+YYY(t) =CCC+
+∫ t
+s
+YYY(u)AAA(u)du,
+is given by
+YYY(t) =CCC
+t∏
+s
+(III+AAA(x)dx).
+Proof.By (8),
+t∏
+s
+(III+AAA(x)dx) =III+
+∫ t
+s
+u∏
+s
+(III+AAA(x)dx)AAA(u)du
+from which
+YYY(t) =CCC
+t∏
+s
+(III+AAA(x)dx)
+=CCC+
+∫ t
+s
+CCC
+u∏
+s
+(III+AAA(x)dx)AAA(u)du
+=CCC+
+∫ t
+s
+YYY(u)AAA(u)du.
+By uniquess, the result follows.□
+2. Properties of the product integral
+The product integral is a fundamental solution in the sense that if
+YYY′(t) =YYY(t)AAA(t), YYY(s) =CCC
+then
+YYY(t) =CCC
+t∏
+s
+(III+AAA(x)dx) =YYY(s)
+t∏
+s
+(III+AAA(x)dx).
+Now take anys,t,u. Then
+YYY(t) =Y YY(u)
+t∏
+u
+(III+AAA(x)dx)
+=YYY(s)
+u∏
+s
+(III+AAA(x)dx)
+t∏
+u
+(III+AAA(x)dx)
+Now if the matrix functiont→YYY(t) is such thatYYY(s) =III, thenYYY(t) on the left hand side
+simply equals the product integral fromstot. Hence we conclude the following important
+result.
+2. PROPERTIES OF THE PRODUCT INTEGRAL 11
+Theorem 1.9.For anys,u,twe have that
+t∏
+s
+(III+AAA(x)dx) =
+u∏
+s
+(III+AAA(x)dx)
+t∏
+u
+(III+AAA(x)dx).(9)
+Proof. □
+Sinces,t,uare arbitrary, takings=twe then obtain the following.
+Corollary 1.10.The product integral is an invertible matrix with
+[ u∏
+s
+(III+AAA(x)dx)
+]−1
+=
+s∏
+u
+(III+AAA(x)dx)
+Lemma 1.11(Commutative property).IfA AA(u)CCC=CCCAAA(u)for allu∈[s,t], then
+CCC
+t∏
+s
+(III+AAA(u)du) =
+t∏
+s
+(III+AAA(u)du)CCC.
+Proof.Consider
+t∏
+s
+(III+AAA(x)dx) =III+
+∫ t
+s
+u∏
+s
+(III+AAA(x)dx)AAA(u)du.
+Multiply from the right byCCCto get
+t∏
+s
+(III+AAA(x)dx)CCC=CCC+
+∫ t
+s
+u∏
+s
+(III+AAA(x)dx)AAA(u)CCCdu.
+Then use then commutativity
+t∏
+s
+(III+AAA(x)dx)CCC=CCC+
+∫ t
+s
+u∏
+s
+(III+AAA(x)dx)CCCAAA(u)du.
+But then by Corollary 1.8, ∏t
+s(III+AAA(x)dx)CCCmust be equal toCCC ∏t
+s(III+AAA(x)dx).
+□
+Theorem 1.12.IfAAA(u)BBB(v) =BBB(v)AAA(u)for allu,v∈[s,t], then
+t∏
+s
+(III+AAA(x)dx)
+t∏
+s
+(III+BBB(x)dx) =
+t∏
+s
+(III+ (AAA(x) +BBB(x))dx).
+Proof.Define
+FFF(s,t) =
+t∏
+s
+(III+AAA(x)dx)
+t∏
+s
+(III+BBB(x)dx).
+12 1. PRODUCT INTEGRATION
+By Lemma 1.11,
+∂
+∂tFFF(s,t) =
+t∏
+s
+(III+AAA(x)dx)AAA(t)
+t∏
+s
+(III+BBB(x)dx)
++
+t∏
+s
+(III+AAA(x)dx)
+t∏
+s
+(III+BBB(x)dx)BBB(t)
+=
+t∏
+s
+(III+AAA(x)dx)
+t∏
+s
+(III+BBB(x)dx)AAA(t)
++
+t∏
+s
+(III+AAA(x)dx)
+t∏
+s
+(III+BBB(x)dx)BBB(t)
+=FFF(s,t)(AAA(t) +BBB(t))
+SinceFFF(s,s) =III, the result follows.□
+The matrix exponential is a special case of the product integral in the following sense.
+Theorem 1.13.IfAAA(x)all commute, i.e.A AA(u)AAA(v) =AAA(v)AAA(u)for allu,v∈[s,t],
+then
+t∏
+s
+(III+AAA(x)dx) = exp
+(∫ t
+s
+AAA(u)du
+)
+.
+In particular, ifAAA(x) =AAAλ(x)for some constant matrixAAAand functionλ(x), then
+t∏
+s
+(III+AAA(x)dx) = exp
+(
+AAA
+∫ t
+s
+λ(u)du
+)
+Proof.Our candidate equals
+exp
+(∫ t
+s
+AAA(u)du
+)
+=
+∞∑
+k=0
+(∫t
+sAAA(u)du
+)k
+k! .
+Differentiation of a product ofkmatrix functions yields,
+d
+dt(AAA1(t)AAA2(t)···AAAk(t)) =AAA′
+1(t)AAA2(t)···AAAk(t)
++AAA1(t)AAA′
+2(t)···AAAk(t)
+...
++AAA1(t)AAA2(t)···AAA′
+k(t).
+Now let
+AAAi(t) =
+∫ t
+s
+AAA(u)du
+2. PROPERTIES OF THE PRODUCT INTEGRAL 13
+for alli. ThenAAA′
+i(t) =AAA(t) for alli, and sinceAAA(u)AAA(v) =AAA(v)AAA(u) for allu,v∈[s,t], we
+get that
+d
+dt
+(∫ t
+s
+AAA(u)du
+)k
+=k
+(∫ t
+s
+AAA(u)du
+)k−1
+AAA(t).
+But then
+d
+dt exp
+(∫ t
+s
+AAA(u)du
+)
+=
+∞∑
+k=0
+1
+k!
+d
+dt
+(∫ t
+s
+AAA(u)du
+)k
+=
+∞∑
+k=1
+1
+k!k
+(∫ t
+s
+AAA(u)du
+)k−1
+AAA(t)
+= exp
+(∫ t
+s
+AAA(u)du
+)
+AAA(t).
+Together with
+exp
+(∫ t
+s
+AAA(u)du
+)
+=III
+fors=t, the theorem has then been proved.□
+Corollary 1.14.IfAAA(x) =AAAconstant, then
+t∏
+s
+(III+AAAdx) =eAAA(t−s).
+Proof.Follows from the above withλ(x)≡1.□
+Corollary 1.15.Letr(x)be a real and bounded function. Then
+exp
+(
+−
+∫ t
+s
+r(x)dx
+) t∏
+s
+(III+AAA(x)dx) =
+t∏
+s
+(III+ (AAA(x)−r(x)III)dx).
+Proof.Since the matrix exponential of a diagonal matrix equals the diagonal matrix con-
+taining the exponentials of the diagonal elements (check), it is clear that
+exp
+(
+−
+∫ t
+s
+r(x)dx
+)
+III= exp
+(
+−
+∫ t
+s
+r(x)IIIdx
+)
+Th.1.13=
+t∏
+s
+(III−r(x)IIIdx).
+But then
+exp
+(
+−
+∫ t
+s
+r(x)dx
+) t∏
+s
+(III+AAA(x)dx) = exp
+(
+−
+∫ t
+s
+r(x)dx
+)
+·III·
+t∏
+s
+(III+AAA(x)dx)
+14 1. PRODUCT INTEGRATION
+=
+t∏
+s
+(III−r(x)IIIdx)
+t∏
+s
+(III+AAA(x)dx)
+Th.1.12=
+t∏
+s
+(III+ (AAA(x)−r(x)III)dx)
+since the matricesr(x)IIIcommute with any matrix.□
+Theorem 1.16.The product integral satisfies
+∂
+∂s
+t∏
+s
+(III+AAA(x)dx) =−AAA(s)
+t∏
+s
+(III+AAA(x)dx).
+On the other hand, the solution to the system of differential equations
+∂
+∂sXXX(s) =−AAA(s)XXX(s)
+with initial conditionXXX(t) =IIIis exactly the function
+s→
+t∏
+s
+(III+AAA(x)dx).
+Proof.For any differentiable matrix functionMMM(x) we have that
+d
+dxMMM−1(x) =−MMM−1(x)MMM′(x)MMM−1(x).
+This follows from
+000 = d
+dxIII= d
+dx
+(
+MMM(x)MMM−1(x)
+)
+=MMM′(x)MMM−1(x) +MMM(x) d
+dxMMM−1(x)
+and rearranging. Then
+d
+ds
+t∏
+s
+(III+AAA(x)dx) = d
+ds
+
+
+s∏
+t
+(III+AAA(x)dx)
+
+
+−1
+=−
+
+
+s∏
+t
+(III+AAA(x)dx)
+
+
+−1
+d
+ds
+s∏
+t
+(III+AAA(x)dx)
+
+
+
+
+s∏
+t
+(III+AAA(x)dx)
+
+
+−1
+=−
+
+
+s∏
+t
+(III+AAA(x)dx)
+
+
+−1s∏
+t
+(III+AAA(x)dx)AAA(s)
+
+
+s∏
+t
+(III+AAA(x)dx)
+
+
+−1
+=−AAA(s)
+
+
+s∏
+t
+(III+AAA(x)dx)
+
+
+−1
+=−AAA(s)
+t∏
+s
+(III+AAA(x)dx)
+□
+2. PROPERTIES OF THE PRODUCT INTEGRAL 15
+The next result is the corner stone for computing reserves and higher order moments in
+multi–state life insurance models.
+Theorem 1.17(Van Loan).LetAAA(x),BBB(x)andCCC(x)be continuous matrix functions.
+Then we have that
+t∏
+s
+(
+III+
+(AAA(x)B BB(x)
+000C CC(x)
+)
+dx
+)
+=
+
+
+t∏
+s
+(III+AAA(x) dx)
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du
+000
+t∏
+s
+(III+CCC(x) dx)
+
+
+Proof.By Leibniz’ integration rule,
+∂
+∂t
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du
+=
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u) ∂
+∂t
+t∏
+u
+(III+CCC(x) dx) du+
+t∏
+s
+(III+AAA(u))BBB(t)
+t∏
+t
+(III+CCC(x) dx)
+=
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du CCC(t) +
+t∏
+s
+(III+AAA(u))BBB(t).
+Let
+BBB(s,t) =
+
+
+t∏
+s
+(III+AAA(x) dx)
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du
+000
+t∏
+s
+(III+CCC(x) dx)
+
+
+denote the proposal. Then
+∂
+∂tBBB(s,t) =
+
+
+∂
+∂t
+t∏
+s
+(III+AAA(x) dx) ∂
+∂t
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du
+000 ∂
+∂t
+t∏
+s
+(III+CCC(x) dx)
+
+
+=
+
+
+t∏
+s
+(III+AAA(x) dx)
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du
+000
+t∏
+s
+(III+CCC(x) dx)
+
+
+(
+AAA(t)BBB(t)
+000C CC(t)
+)
+=BBB(s,t)
+(
+AAA(t)BBB(t)
+000C CC(t)
+)
+.
+Also,BBB(s,t) =IIIfors=t. Therefore,
+BBB(s,t) =
+t∏
+s
+
+III+
+(
+AAA(u)BBB(u)
+000C CC(u)
+)
+du
+
+.
+□
+16 1. PRODUCT INTEGRATION
+Remark 1.18:It is enough to assume continuity ofBBB(x) andCCC(x) only in the proof above.
+Also, if we carry out the proof of Lemma 1.17 differentiating w.r.t.sinstead oft, for which
+we may assume continuity ofAAA(x) andBBB(x) only instead.
+Remark 1.19:Lemma 1.17 also holds for functions with a finite number of discontinuities,
+which can be seen be decomposing the product integrals into product over intervals where
+the function is continuous and using (9). Indeed, assume thatC CC(x) is continuous in [s,t]
+apart fromt 0∈(s,t). Then
+t0∏
+s
+
+III+
+(
+AAA(x)B BB(x)
+000C CC(x)
+)
+dx
+
+ =
+
+
+t0∏
+s
+(III+AAA(x) dx)
+∫ t0
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t0∏
+u
+(III+CCC(x) dx) du
+000
+t0∏
+s
+(III+CCC(x) dx)
+
+
+t∏
+t0
+
+III+
+(
+AAA(x)B BB(x)
+000C CC(x)
+)
+dx
+
+ =
+
+
+t∏
+t0
+(III+AAA(x) dx)
+∫ t
+t0
+u∏
+t0
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du
+000
+t∏
+t0
+(III+CCC(x) dx)
+
+
+Then using (9),
+t∏
+s
+
+III+
+(
+AAA(x)B BB(x)
+000C CC(x)
+)
+dx
+
+ =
+t0∏
+s
+
+III+
+(
+AAA(x)B BB(x)
+000C CC(x)
+)
+dx
+
+
+t∏
+t0
+
+III+
+(
+AAA(x)B BB(x)
+000C CC(x)
+)
+dx
+
+
+and ditto on the right hand side expressions, we get for example that the upper right block
+amounts to
+t0∏
+s
+(III+AAA(x) dx)
+∫ t
+t0
+u∏
+t0
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du
++
+∫ t0
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t0∏
+u
+(III+CCC(x) dx) du
+t∏
+t0
+(III+CCC(x) dx
+=
+∫ t
+s
+u∏
+s
+(III+AAA(x) dx)BBB(u)
+t∏
+u
+(III+CCC(x) dx) du.
+We next show Leibniz’ rule for product integrals. First a lemma.
+2. PROPERTIES OF THE PRODUCT INTEGRAL 17
+Lemma 1.20.If the integrand matrix functionAAA(x,z)depends on an external variable
+z∈[c,d], such that
+∂
+∂zAAA(x,z)
+is bounded over[s,t]×[c,d], then
+∂
+∂z
+t∏
+s
+(III+AAA(x,z)dx) =
+∫ t
+s
+u∏
+s
+(III+AAA(x,z)dx) ∂
+∂zAAA(u,z)
+t∏
+u
+(III+AAA(x,z)dx)du.
+Proof.Let
+FFF(s,t,z) =
+t∏
+s
+(
+III+AAA(u,z)du
+)
+.
+ThenFFF(s,t,z) satisfies
+∂
+∂tFFF(s,t,z) =FFF(s,t,z)AAA(t,z), FFF(s,s,z) =III.
+Thus ∂
+∂zFFF(s,t,z) satisfies
+∂
+∂t
+∂
+∂zFFF(s,t,z) = ∂
+∂z
+[
+FFF(s,t,z)AAA(t,z)
+]
+= ∂
+∂zFFF(s,t,z)AAA(t,z) +FFF(s,t,z) ∂
+∂zAAA(t,z)
+= ∂
+∂zFFF(s,t,z)AAA(t,z) +
+t∏
+s
+(
+III+AAA(u,z)du
+)∂
+∂zAAA(t,z),
+with ∂
+∂zFFF(s,s,z) = 000, the latter following fromz→FFF(s,s,z) =IIIbeing constant inz.
+To show that
+∂
+∂zFFF(s,t,z) =
+∫ t
+s
+u∏
+s
+(III+AAA(x,z)dx) ∂
+∂zAAA(u,z)
+t∏
+u
+(III+AAA(x,z)dx)du
+we only need to show that the r.h.s. proposal satisfies the above differential equation. But
+this follows directly from Leibniz’ rule for ordinary integrals since
+∂
+∂t
+
+
+∫ t
+s
+u∏
+s
+(III+AAA(x,z)dx) ∂
+∂zAAA(u,z)
+t∏
+u
+(III+AAA(x,z)dx)du
+
+
+=
+∫ t
+s
+u∏
+s
+(III+AAA(x,z)dx) ∂
+∂zAAA(u,z) ∂
+∂t
+t∏
+u
+(III+AAA(x,z)dx)du
++
+u∏
+s
+(III+AAA(x,z)dx) ∂
+∂zAAA(u,z)
+t∏
+u
+(III+AAA(x,z)
+⏐⏐⏐⏐⏐⏐u=t
+=
+
+
+∫ t
+s
+u∏
+s
+(III+AAA(x,z)dx) ∂
+∂zAAA(u,z)
+t∏
+u
+(III+AAA(x,z)dx)du
+
+AAA(t,z)
+18 1. PRODUCT INTEGRATION
++
+t∏
+s
+(III+AAA(u,z)du) ∂
+∂zAAA(t,z).
+Hence the proposal in the square bracket indeed satisfies the correct differential equation
+and initial condition.□
+Theorem 1.21(Leibniz’ rule).Assume thatA AA(x,z)is as in Lemma 1.20. Then
+∂
+∂s
+t∏
+s
+(III+AAA(x,s)dx) =−AAA(s,s)
+t∏
+s
+(
+III+AAA(x,s)dx
+)
++
+∫ t
+s
+u∏
+s
+(III+AAA(x,s)dx) ∂
+∂sAAA(u,s)
+t∏
+u
+(III+AAA(x,s)dx)du
+Proof.Define
+FFF(a,s) =
+t∏
+a
+(III+AAA(x,s)dx)
+ggg(s) = (g1(s),g 2(s)) = (s,s).
+Then
+HHH(s) =FFF(ggg(s)) =
+t∏
+s
+(III+AAA(x,s)dx).
+Leth ij(s) andf ij(a,s) denote theijth element ofHHH(s) andFFF(a,s), respectively. Then
+hij(s) =f ij(ggg(s)).
+Taking derivative,
+d
+dshij(s) =f ij
+a (ggg(s))g′
+1(s) +fij
+s (ggg(s))g′
+2(s)
+=f ij
+a (s,s) +fij
+s (s,s),
+so that d
+dsHHH(s) =FFFa(s,s) +FFFs(s,s).
+Thus
+d
+dsHHH(s) =−AAA(s,s)
+t∏
+s
+(
+III+AAA(x,s)dx
+)
++
+∫ t
+s
+u∏
+s
+(III+AAA(x,s)dx) ∂
+∂sAAA(u,s)
+t∏
+u
+(III+AAA(x,s)dx)du
+□
+3. NUMERICAL COMPUTATION OF PRODUCT INTEGRALS 19
+3. Numerical computation of product integrals
+Computing product integrals numerically does usually not cause in problems. We may
+identify the product integral of a matrix functionAAA(x),
+YYY(t) =
+t∏
+s
+(III+AAA(x)dx),
+as the solution to (3).
+If we letx 0 =s<x 1<x 2<···<xN =twith
+xj+1 =xj + ∆,∆ = t−s
+N
+then we could approximate
+YYY′(x)≈1
+∆
+(
+YYY(x+ ∆)−YYY(x)
+)
+or
+YYY(x+ ∆)≈YYY(x) + ∆YYY′(x).
+But
+YYY′(x) =YYY(x)AAA(x)
+so
+YYY(x+ ∆)≈YYY(x) +YYY(x)AAA(x)∆ =YYY(x)(III+AAA(x)∆).
+This formula also explains the idea behind the notation of the product integral.
+By iterating the above formula, starting withY YY(s) =YYY(x 0) =III, we can then obtain an
+approximation forYYY(t). This way of solving differential equations numerically is referred to
+as Eulers method. The Euler method is not very precise, and requires a very fine grid.
+In turn, the following algorithm written in R, is a so–called fourth order Runge–Kutta
+method, and computes the solution to the system of differential equations much more pre-
+cisely than Eulers method:
+prodint<-function(A,s,t,n){
+x0 <- s
+y0 <- diag(nrow(A(s)))
+h<-(t-s)/n
+for(i in 1:n) {
+s1 <- h * y0%*%A(x0)
+s2 <- h * (y0 +s1/2)%*%A(x0 + h/2)
+s3 <- h * (y0 +s2/2)%*%A(x0 + h/2)
+s4 <- h * (y0 + s3)%*%A(x0 + h)
+y0 <- y0 + s1/6 + s2/3 + s3/3+ s4/6
+x0 <- x0 + h
+}
+return(y0)
+}
+20 1. PRODUCT INTEGRATION
+The input is a matrixAAA, integration limitss,tand number of partitionsn. Output is an
+approximation to the product integral ofAAA(x) fromstot.
+CHAPTER 2
+Markov jump processes
+1. Markov jump processes
+In this chapter we consider Markov processes in continuous time that take values in a discrete
+(finite or at most countable) state space. By nature, such processes are piecewise constant,
+and transitions occur via jumps. They are often referred to as Markov jump processes or
+continuous-time Markov chains.
+The value of the process at a jump time must be defined. It can either be the value just
+before the jump or the value just after. The most common convention is to assign it the
+value after the jump. This assumption makes Markov jump processes continuous from the
+right (and with limits from the left), i.e., they are so-called c` adl` ag processes (Continue ` a
+droite, limite ` a gauche).
+Definition 2.1(Markov property):A continuous-time stochastic process{X t}t≥0
+taking values in a countable setEis called a Markov jump process with state space
+Eif for allt>s>t n>···>t1>0 andj,i,i n,...,i0∈E, we have that
+P(Xt =j|Xs =i,X tn =in,...,Xt1 =i 1,X 0 =i 0) =P(Xt =j|Xs =i).(10)
+In the above definition we may think ofsas the present,ta time in the future andt 0,...,tn
+as times in the history. Hence the Markov property states that the distribution of the future
+given the present and the past only depends on the present. Or quivalently, the future and
+the past are conditionally independent given the present. The latter follows from
+P(Xt =j,X tn =in,...,Xt0 =i 0|Xs =i) = P(Xt =j,X s =i,X tn =in,...,Xt0 =i 0)
+P(Xs =i)
+= P(Xt =j|Xs =i,X tn =in,...,Xt0 =i 0)P(Xs =i,X tn =in,...,Xt0 =i 0)
+P(Xs =i)
+(10)
+=P(X t =j|Xs =i) P(Xs =i,X tn =in,...,Xt0 =i 0)
+P(Xs =i)
+=P(Xt =j|Xs =i)P(Xtn =in,...,Xt0 =i 0|Xs =i).
+An example of asample path(or realisation),t→X(t,ω) for someω∈Ω in the sample space,
+is given in Figure 1 as the blue lines. Also the c` adl` ag is clearly indicated by empty and solid
+circles at the times of transition.
+21
+22 2. MARKOV JUMP PROCESSES
+1
+2
+3
+4
+5
+X(t)
+t
+Figure 1.The blue lines show a sample path of a Markov jump processX(t) with 5 states.
+The value of the process at the exact moment of a jump is indicated by a solid circle (hence
+right–continuous).
+Fors≤tandi,j∈E, we refer to
+pij(s,t) =P(X t =j|Xs =i) (11)
+as thetransition probabiltyof the process for going from stateito statejduring [s,t]. If
+i=jthe process may transition fromitoiboth with or without any jumps occuring during
+[s,t]. T
+The process is called time-homogeneous if the transition probabilitiesp ij(s,t) only depend
+ont−s, in which case we writep ij(h) =P(X t+h =j|Xt =i), referred to as theh–step
+transition probabilities.
+The transition probabilities are arranged in a transition matrix,
+PPP(s,t) ={pij(s,t)}i,j∈E, s≤t,
+or, in the time–homogeneous case,
+PPP(h) ={pij(h)}i,j∈E, h≥0.
+The so–called finite–dimensional distributions of a Markov process are fully determined by
+the its initial distribution and the transition probabilities.
+Theorem 2.2(finite–dimensional distributions).Let{X t}t≥0be a Markov process with
+initial distributionπi =P(X 0 =i)and transition probabilitiesp ij(s,t). Then for any set of
+time pointst 1<t 2<···<tn and statesi 0,i 1,...,in, we have that
+P(X0 =i 0,Xt1 =i 1,...,Xtn =in) =πi0pi0i1(0,t 1)pi1i2(t1,t 2)···pin−1in(tn−1,tn).
+Proof.Follows by repeated use of the Markov property.□
+Definition 2.3:When conditioning onX 0 it is common to use the notation
+Pi(A) =P(A|X0 =i).
+1. MARKOV JUMP PROCESSES 23
+Hence Theorem 2.2 can be rephrased as
+Pi(xt1 =i 1,...,Xtn =in) =pi,i1(0,t 1)pi1i2(t1,t 2)···pin−1in(tn−1,tn),
+at least whenπi>0. If we condition onX tk =ik, then by the Markov property
+Pi(xt1 =i 1,...,Xtn =in|Xtk =ik) =Pi(xtk+1 =ik+1,...,Xtn =in|Xtk =ik)
+=pikik+1(tk,tk+1)···pin−1in(tn−1,tn).
+But the last expression is just finite–dimensional distribution of a Markov process starting
+att k in statei k, i.e. of the shifted processX(t−tk) conditionally on it starts ati k. Hence,
+at any times, conditionally onX(s) =i, say, the development ofX(t) from that point
+onwards is simply a new Markov process,Y(s) =X(t−s), starting atiand with transition
+probabilities ˜pjk(u,v) =p jk(u+s,v+s). This is illustrated in Figure 2.
+1
+2
+3
+4
+5
+X(t)
+t
+Y(t)=X(t−s)
+s
+Figure 2.Conditioning on the state ofX(s), the continuation of the process beyondsis
+the same as starting a new Markov process at timeswith shifted transition probabilities.
+While transition probabilities can be thought of as the probabilties of a future state given a
+current state over an arbitrary period of time, we next look into what is the probability of
+a jump in the process at a given moment of time, i.e. the probability of an instantaneous
+transition.
+Assumption 2.4:For anys≥0, we assume the existence of the limits
+ΛΛΛ(s) ={λij(s)}i,j∈E= lim
+h↓0
+PPP(s,s+h)−III
+h ,(12)
+and that alls→λij(s) are continuous. The matrices ΛΛΛ(s) are called intensity matrices.
+In the special case of time–homogenous processes, ΛΛΛ(s) = ΛΛΛ is a constant matrix.
+An intensity matrix has an infinitesimal interpretation as
+PPP(s,s+h) =III+hΛΛΛ(s) +o(h),
+24 2. MARKOV JUMP PROCESSES
+so that
+pij(s,s+h) =δ ij +λij(s)h+o(h) (13)
+for alli,j∈Eand whereδij = 1{i=j}is the indicator for whetheri=j.
+The elementsλij(s) of the matrix ΛΛΛ(s) then satisfies
+λij(s)≥0, i̸=j, λii(s)≤0 andλii(s) =−
+∑
+j̸=i
+λij(s),(14)
+which follows from
+ΛΛΛ(s)eee= lim
+h↓0
+PPP(s,s+h)eee−eee
+h = 000,
+or, equivalently, summing over alljon both sides in (13).
+1
+2
+3
+4
+5
+X(t)
+t
+u
+u+du
+μ34(u)du  = prob. of transition from  
+  3 to 4 during  [u,u+du)
+s t
+p32(s,t) = prob. of going from  
+    state 3 to 2 during [s,t]
+Figure 3.The blue lines show a trajectory of a time–inhomogeneous Markov jump process
+X(t) with 5 states. The value of the process at the exact moment of a jump is indicated by
+a solid circle (hence right–continuous). Highlighted are examples of transitions over longer
+times as opposed to instantaneous transitions.
+Letλi(s) =−λii(s). Then from (13), we conclude that
+λij(t)dt= probability of a jump from stateitojduring [t,t+ dt)
+fori̸=j, and
+1 +λii(t)dt= 1−λi(t)dt= probability of no jumps during [t,t+ dt).
+Hence, the probability of a jump out of stateiduring [t,t+dt) is
+λi(t)dt=−λii(t)dt.
+Conditionally on there is a jump during [t,t+dt), the probabilityq ij(t) that the process will
+jump to statejis therefore
+qij(t) = lim
+h↓0
+λij(t)dt
+λi(t)dt
+1. MARKOV JUMP PROCESSES 25
+= lim
+h↓0
+λij(t) +o(h)/h
+λi(t)h+o(h)
+= lim
+h↓0
+λij(t) +o(h)/h
+λi(t)h+o(h)
+= λij(t)
+λi(t).(15)
+The numberλi(t), referred to as a rate or intensity, is in fact a hazard rate.
+The sample path properties for the Markov jump process are then as follows. Starting at
+statei, the time until the first jump out of it,T 1 say, is then the same as the waiting time
+for the first arrival in a Poisson process with ratesλi(t). Its density is given by (??),
+fT1(s) = e−
+∫s
+0 λi(x)dxλi(s).
+The process then jumps to a state,j, with probabilityq ij(s). Once in statejat times,
+the process then starts over again a Markov jump process with intensitiesλ ij(s+·). This
+follows from the strong Markov property, which is dealt in the following section, since times
+of jump are stopping times. This is illustrated in Figure 4.
+1
+2
+3
+4
+5
+X(t)
+t
+e−∫s
+0μ3(x)dxμ3(s)
+e−∫t
+sμ1(x)dxμ1(t)
+s t u
+e−∫u
+tμ2(x)dxμ2(u)
+μ31(s)
+μ3(s)
+μ12(t)
+μ1(t)
+μ23(t)
+μ2(t)
+Figure 4.An illustration of sample path properties ofX(t). The formulas above the blue
+lines (sojourns) correspond to the densities of the sojourns times. Once a sojourn time has
+been drawn, a jump must occur. The formulas next to the red curved arrows indicate the
+probability of a transition to indicated new state.
+Now that we have a complete characterisation of the sample paths, we now turn to the
+celebrated result of Kolmogorov, which will provide us with an important tool for computing
+the transition probabilities.
+26 2. MARKOV JUMP PROCESSES
+Theorem 2.5(Kolmogorov’ differential equations).Relations bewteenΛΛΛ(s),ΛΛΛ(t)and
+PPP(s,t)are given by kolmogorov’ backwards and forward differential equations, respec-
+tively:
+∂
+∂sPPP(s,t) =−ΛΛΛ(s)PPP(s,t)and ∂
+∂tPPP(s,t) =PPP(s,t)ΛΛΛ(t),
+the solution of which is given by
+PPP(s,t) =
+t∏
+s
+(III+ ΛΛΛ(x)dx).
+In the time–homogeneous case we have that
+d
+dtPPP(t) = ΛΛΛPPP(t) =PPP(t)ΛΛΛ
+with solution
+PPP(t) = exp(ΛΛΛt).
+Remark 2.6:The terms backward and forward are related to how the differential equations
+are solved. For the backward equation,
+∂
+∂sPPP(s,t) =−ΛΛΛ(s)PPP(s,t),
+starting fromt, one solves fors<t, i.e. backwards in time, whereas for the the forward
+equation,
+∂
+∂tPPP(s,t) =PPP(s,t)ΛΛΛ(t),
+starting froms, one solves ahead in time.
+Proof.Conditioning on whether there is a jump or not in [s,t],
+pij(s,t) =δij e−
+∫t
+sλi(u)du
+  
+prob. of no
+jump
++
+∫ t
+s
+e−
+∫u
+s λi(u)duλi(u)  
+density of a
+jump atu
+∑
+k̸=j
+qik(u)  
+prob. of jump
+fromitok
+pkj(u,t)du
+=δije−
+∫t
+sλi(u)du +
+∑
+k̸=j
+∫ t
+s
+e−
+∫u
+s λi(u)duλik(u)pkj(u,t)du.
+The integrand is continuous, its integral is differentiable, so we conclude thatp ij(s,t) is
+differentiable in bothsandt. We can now obtain the results by differentiation w.r.t.sort,
+using Leibniz’ rule.
+However, since we now know about the differentiability, we may proceed with a direct prob-
+abilistic argument as follows. For backward equation, we condition on what happens in
+(s,s+ ds]:
+pij(s,t) = (1−λi(s)ds)  
+prob. of no
+jumps
+pij(s+ ds,t) +
+∑
+k̸=i
+λik(s)ds  
+prob. of a
+jump fromitok
+pkj(s+ ds,t).
+1. MARKOV JUMP PROCESSES 27
+Rearrange to
+pij(s,t)−pij(s+ ds,t)
+ds =−λi(s)pij(s+ ds,t) +
+∑
+k̸=i
+λik(s)pkj(s+ ds,t).
+Sinceλii(s) =−λi(s), this amounts to
+−∂
+∂spij(s,t) =
+∑
+k
+λik(s)pkj(s,t).
+On matrix form, this yields the backward equation.
+Regarding the forward equation, we condition on what happens at timetand consider
+pij(s,t+ dt) =p ij(s,t)(1−λj(t)dt) +
+∑
+k̸=j
+pik(s,t)λkj(t)dt
+=pij(s,t) +
+∑
+k
+pik(s,t)λkj(t)dt.
+Rearranging as before yields the result.□
+From Theorem 1.9 we also obtain Chapman–Kolmogorov’s equations
+PPP(s,t) =PPP(s,u)PPP(u,t).
+In the time–homogeneous case this amounts to
+PPP(s+t) =PPP(s)PPP(t).
+Example 2.7:Consider the matrix
+ΛΛΛ(u) = ΛΛΛ =
+
+
+−5 3 2
+3−4 1
+0 0 0
+
+.
+First we notice, that the row sums all sum to zero, and that the off–diagonal elements are
+non–negative. Hence it is an intensity matrix. Let{Xt}t≥0denote a Markov jump process
+with ΛΛΛ as intensity matrix. We let rowicorrespond to theith state of the process,i= 1,2,3.
+Let us for example think ofibeing the state of an insured, so that state 1 as active, 2 as
+invalid and 3 as dead.
+First we consider some information we can deduce from the intensity matrix. We notice that
+state 3 isabsorbing, since once entered the process will remain in this state.
+Next we find the probabilities (15). They will not depend onueither, and will be
+q12 = 3
+5,q 13 = 2
+5,q 21 = 3
+4,q 23 = 1
+4,
+and the rest being zero. This means, for example, that givenX t = 2, the probability that
+the process will jump to state 3 next time it jumps will be 1/4, and with 3/4 of probability
+it will jump to state 1.
+28 2. MARKOV JUMP PROCESSES
+Next we consider the transition probabilities. The transition probability matrix is given by
+exp(ΛΛΛx). To find this, we compute its eigenvalues, which amounts to
+λ1 =−7.541381, λ2 =−1.458619,andλ3 = 0,
+with corresponding eigenvectors
+vvv1 =
+
+
+−0.7630200
+0.6463749
+0
+
+, vvv2 =
+
+
+−0.6463749
+−0.7630200
+0
+
+ andvvv3 =
+
+
+0.5773503
+0.5773503
+0.5773503
+
+.
+Let
+MMM={vvv1,vvv2,vvv3}=
+
+
+−0.7630200−0.6463749 0.5773503
+0.6463749−0.7630200 0.5773503
+0 0 5773503
+
+.
+Then
+exp(ΛΛΛx) =MMMexp(DDDx)MMM−1.
+Forx= 1, this gives
+exp(ΛΛΛ) =
+
+
+0.0974715 0.1144348 0.7880937
+0.1144348 0.1356164 0.7499487
+0.0000000 0.0000000 1.0000000
+
+.
+From this we can also deduce all the transition probabilities. For example, given thatX 0 = 1
+the probability thatX 1 = 1 is 0.0974715. As we see, there is a possibility that process leaves
+state 1 and comes back at a later point. The probability, givenX 0 = 1, that the process
+never leaves state 1 up to time 1, is in turn
+exp(−5·1) = 0.00674,
+which is much smaller than 0.0974715.□
+2. The strong Markov property
+Definition 2.8(Stopping time):Let{X t}t≥0be a Markov jump process and let
+Ft =σ(Xs :s≤t). A nonnegative random variableτis called a stopping time for
+{Xt}t≥0if{τ≤t}∈Ft for allt.
+Theσ-algebra of the process up to a stoppingτ,Fτ, is defined by the measurable sets
+Afor which
+∀t≥0: A∩{τ≤t}∈Ft.
+2. THE STRONG MARKOV PROPERTY 29
+Theorem 2.9(Strong Markov property).Every Markov jump process{Xt}t≥0satis-
+fies the strong Markov property, i.e., for all0≤h 1≤h2≤···≤hn, we have that
+P(Xτ+h1 =i 1,...,Xτ+hn =in|Fτ) =P(Xτ+h1 =i 1,...,Xτ+hn =in|Xτ)
+on{τ <∞}. For time–homogeneous processes this further reduces to
+P(Xτ+h1 =i 1,...,Xτ+hn =in|Fτ) =PXτ(Xh1 =i 1,...,Xhn =in)
+also on{τ <∞}.
+Proof.Ifτis deterministic, then the statement of the theorem is the usual Markov property,
+which holds by assumption. Now assume thatτis a stopping time that can take at most a
+countable number of values (including possibly +∞),
+τ∈{t1,t 2,...}∪{+∞}.
+The assertion of the theorem is by the definition of conditional expectation equivalent to the
+statement that for everyB∈Fτ, we have
+∫
+B∩{τ<∞}
+PXτ(Xτ+h1=i1,...,Xτ+hn=in)dP=
+∫
+B∩{τ<∞}
+1{Xτ+h1 =i 1,...,Xτ+hn=in}dP.
+Since{τ <∞}=⋃∞
+i=1{τ=ti}(excluding +∞), we then have that
+∫
+B∩{τ<∞}
+PXτ(Xτ+h1 =i 1,...,Xτ+hn =in)dP
+=
+∞∑
+i=1
+∫
+B∩{τ=ti}
+PXτ(Xτ+h1 =i 1,...,Xτ+hn =in)dP
+=
+∞∑
+i=1
+∫
+B∩{τ=ti}
+PXti(Xti+h1 =i 1,...,Xti+hn =in)dP
+(∗)
+=
+∞∑
+i=1
+∫
+B∩{τ=ti}
+1{Xti+h1 =i 1,...,Xti+hn =in}dP
+=
+∫
+B∩{τ<∞}
+1{Xτ+h1 =i 1,...,Xτ+hn =in}dP.
+In (∗) we have used the ordinary Markov property and the definition ofF τbeing theσ–
+algebra satisfyingB∩{τ=ti}∈Fti.
+In the the general case is. Here we approximate the stopping timeτby
+τm = [2mτ+ 1]
+2m ↓τ
+asm→∞. Sinceτm takes only countably many values, we have that the strong Markov
+property holds forτm, i.e.,
+P(Xτm+h1 =i 1,...,Xτm+hn =in|Fτm) =PXτm(Xτm+h1 =i 1,...,Xτm+hn =in)
+onτm<∞, or equivalently, for allB∈Fτm we have that
+E(1{Xτm+h1 =i 1,...,Xτm+hn =in}1B) =E(1BPXτm(Xτm+h1 =i 1,...,Xτm+hn =in)).
+30 2. MARKOV JUMP PROCESSES
+Now letB∈Fτ, which is hence also contained in everyF τm as well. By right continuity of
+Markov jump processes,X τm→Xτ, and dominated convergence,
+E(1{Xτm+h1 =i 1,...,Xτm+hn =in}1B)→E(1{Xτ+h1 =i 1,...,Xτ+hn =in}1B)
+asm→∞. This settles the left hand side. Concerning the right hand side,
+P(·|Xτm =j) = P(·∩{Xτm =j})
+P(Xτm =j) →P(·∩{Xτ=j})
+P(Xτ=j) =P(·|Xτ=j),
+we have thatP Xτm(·)→PXτ(·), and so by dominated convergence,
+E(1BPXτm(Xh1 =i 1,...,Xhn =in))→E(1BPXτ(Xh1 =i 1,...,Xhn =in))
+asm→∞. This concludes the proof of the first part. The details of the time–homogeneous
+case is left to the reader.□
+Oftenτis defined in such way thatX τis deterministic. For example, ifτrepresents the
+first time that{Xt}t≥0is in statei, thenX τ=i, and consequentlyP Xτ(·) =Pi(·). In Figure
+5, for example, we considerτto be the first time the process enters state 2. Then the
+strong Markov property states that the future of the process only depends on the state at
+timeτ(which is obviously state 2). In other words, a new process starting atτin state 2,
+Y(t) =X(t−τ), is again a Markov process with shifted transition probabilties.
+1
+2
+3
+4
+5
+Xt
+t
+τ=inf{t≥0:Xt=2}
+Figure 5.An illustration of sample path properties ofX(t). The formulas above the
+blue lines (sojourns) correspond to the densities corresponding sojourns. From these the
+sojourn times can be drawn (simulated). Once a sojourn time has been drawn, a jump must
+occur. The formulas next to the red curved arrows indicate the probability of a transition
+to indicated new state.
+CHAPTER 3
+A model for stochastic interest rates
+1. Recap on hazard rates
+LetXbe a random variable with densityf, its c.d.f.Fand survival function ¯F= 1−F.
+Since
+f(x) =F ′(x)≈F(x+ dx)−F(x)
+dx
+then we have the following well known interpretation of the density,
+f(x)dx=P(X∈(x,x+ dx]).
+This is the unconditional probability thatX∈(x,x+ dx]. The conditional probability of
+this evnent givenX>x, is given by
+P(X∈(x,x+ dx]|X>x) =P(X∈(x,x+ dx])
+P(X>x)
+= f(x)dx
+¯F(x)
+=−
+¯F′(x)
+¯F(x) dx
+=−d
+dx log ¯F(x)dx.
+Defining
+h(x) =−d
+dx log ¯F(x)
+we get
+P(X>x) = ¯F(x) = exp
+(
+−
+∫ x
+0
+h(y)dy
+)
+.
+The interpreation ofh(x) is thath(x)dxis the probability of instantaneous realisation ofX
+just afterxgivenX>x. For example, ifXdenotes the life–time of a person, thenh(x)dxis
+the probability that a person agedxwill die right at that moment, i.e.h(x) is the intensity
+or force of mortality at that moment. It is also referred to as the hazard rate, andh(x) the
+hazard function. As we see, there is a one–to–one correspondence between hazard rates and
+survival functions (and hence also c.d.f. and densities).
+31
+32 3. A MODEL FOR STOCHASTIC INTEREST RATES
+Now consider stochastic mortality rates, or which is the same, stochastic hazard rates. Then
+{h(x)}x≥0can be thought of as a stochastic process. LetF x =σ(h(u):u≤x) be theσ–
+algebra representing the history of the process up to timex. Then
+P(X>x|Fx) = exp
+(
+−
+∫ x
+0
+h(y)dy
+)
+(16)
+since conditionally onF x, the processh(y) is to be considered as deterministic up to time
+x. But then, taking expectations, we get
+P(X>x) =E
+(
+exp
+(
+−
+∫ x
+0
+h(y)dy
+))
+.(17)
+2. Phase–type distributions
+Markov models in life–insurance are often illustrated by means of flow diagrams like in
+Figures 1 and 2.
+In these models, the ultimate state of death is an absorbing state. The time until death
+from a certain state, which is the time it takes for the Markov process to reach the absorbing
+state, is hence random and dependent on the current state. The distribution of this random
+time is said to have a phase–type distribution.
+Let{X(t)}t≥0denote the Markov process with a finite state spaceE, say, and intensity
+matrices ΛΛΛ(t) ={λij(t)}i,j∈E.
+Example 3.1(Life-death model):Let (x) be an insured with mortality ratesµ x+t. We
+letX(t) denote a Markov process with state–spaceE={0,1}and behaving according to
+Figure 1. The states correspond to the states “alive” and “dead”, respectively. Then the
+time–dependent intensity matrices are then on the form
+ΛΛΛ(s) =
+(
+λ00(s)λ 01(s)
+λ10(s)λ 11(s)
+)
+=
+(
+−µx+t(s)µx+t(s)
+0 0
+)
+.
+The time until death starting in state 0 (alive) at timet= 0 (age =x) is the time until
+absorption
+τ= inf{s>0:Xs = 1}.
+Figure 1.Simplest alive-death model.
+2. PHASE–TYPE DISTRIBUTIONS 33
+□
+Example 3.2(Disability model):We now consider a disability model for (x). LetX(t)
+denote the Markov process describing the state of (x) at timex+t, being either “active”,
+“disabled” or “dead”, see Figure 2. Then its state–space can be written asE={0,1,2}and
+its intensity matrix is seen to be
+ΛΛΛ =
+
+
+−λ0(s)λ 01(s)λ 02(s)
+λ10(s)−λ1(s)λ 12(s)
+0 0 0
+
+.
+The rateλ0(s) is the rate of either becoming disabled or die at times. The rateλ 01(s)
+is the rate of becoming disabled andλ 02(s) the mortality rate for (x) as an active person.
+Furthermore,
+λ0(s) =λ01(s) +λ02(s)
+is the rate of an active (x) either becoming disabled or dying at times.
+In the second row,λ12(s) is the mortality of (x) now being disabled at times. In the simple
+life–death model, the mortality rateµx+t is simply based on (x) being alive, but not on his
+condition of being either active or disabled as in this model. The rateλ 10(s) is the recovery
+rate from disability at times.
+In order to compute the distribution of the time until death,
+τ= inf{s>0:Xs = 2},
+we will now have to consider the possibility of (x) going through the states “active” and
+“disabled” before death. These states are also known as “phases” .
+In this model, “active” and “disabled exhaust all options for possible conditions of (x), and
+in order to compute his life–time distribution, it would be wrong to use onlyλ 02 orλ12 as
+mortality rates. Hereλ 02 will only be the correct mortality rate for an active (x) dying,
+whileλ12 is only correct for a disabled (x) dying. The mortality rateµ x+t for (x) simply
+being “alive” is then obtain from the hazard rate ofτ, i.e.
+µx+t = fτ(t)
+¯Fτ(t) =−d
+dt log ¯Fτ(t),
+wheref τ(t) denotes the density function forτand ¯Fτ(t) =P(τ >t) the survival function for
+τ.
+Knowingf τand ¯Fτ, we could, in principle, recover the simple alive”–“dead” model from the
+more refined disability model.
+34 3. A MODEL FOR STOCHASTIC INTEREST RATES
+Figure 2.Simple disability model.
+□
+A Markovian life–insurance model, which includes an absorbing state (death), can then be
+written as follows in a general set–up.
+Let{Xt}t≥0be a time–inhomogeneous Markov jump process on the finite state–spaceE=
+{1,2,...,p,p+ 1}, say, where states 1,2,...,pare transient (states of the insured) andp+ 1
+absorbing (death). Thus the intensity matrix of{Xt}t≥0is on the form
+ΛΛΛ(t) =
+(
+TTT(t)t tt(t)
+000 0
+)
+.
+Here, for any timet≥0,ttt(t) =−TTT(t)eee, whereeeedenotes the column vectore ee= (1,1,...,1)′.
+This follows from the row sums of intensity matrices being zero.
+Assume thatP(X 0 =p+ 1) = 0 and defineπππ= (π1,...,πp). Thenπππis called the initial
+distribution of the Markov process. In life insuranceπππwill often be (1,0,...,0), which means
+that the process starts in the active state at time zero.
+Definition 3.3:Let
+τ= inf{t≥0:Xt =p+ 1}
+denote the time until absorption of{Xt}. The distribution ofτis then said to be
+an inhomogeneous phase–type distribution with representation (πππ,TTT(t)) and we write
+τ∼IPH(πππ,TTT(t)).
+2. PHASE–TYPE DISTRIBUTIONS 35
+Lemma 3.4.We have the following decomposition:
+PPP(s,t) =
+t∏
+s
+(III+ ΛΛΛ(u)du) =
+
+
+t∏
+s
+(III+TTT(u)du)e ee−
+t∏
+s
+(III+TTT(u)du)eee
+000 1
+
+,(18)
+whereeee= (1,1,...,1)′.
+Proof.From Van Loan (Lemma 1.17, p. 15) and using thatt tt(u) =−TTT(u)eee, we get that
+PPP(s,t) =
+t∏
+s
+(III+ ΛΛΛ(u)du)
+=
+t∏
+s
+
+III+
+(
+TTT(u)t tt(u)
+000 0
+)
+du
+
+
+=
+
+
+t∏
+s
+(III+TTT(x)dx)
+∫ t
+s
+u∏
+s
+(III+TTT(x)dx)ttt(u)du
+000 1
+
+.
+But
+∫ t
+s
+u∏
+s
+(III+TTT(x)dx)ttt(u)du=−
+∫ t
+s
+u∏
+s
+(III+TTT(x)dx)TTT(u)eeedu
+=−
+∫ t
+s
+∂
+∂u
+u∏
+s
+(III+TTT(x)dx)dueee
+=e ee−
+t∏
+s
+(III+TTT(x)dx)eee.
+□
+Theorem 3.5.Assume thatτ∼IPH(πππ,TTT(t)). Then the densityfand the distribution
+functionFofτare given by
+f(x) =πππ
+
+
+x∏
+0
+(III+TTT(u)du)
+
+ttt(x)
+F(x) = 1−πππ
+
+
+x∏
+0
+(III+TTT(u)du)
+
+eee.
+Proof.Since (πππ,0)PPP(0,t) is the distribution ofX t, we get from (18) that
+P(Xt =j) =πππ
+t∏
+0
+(III+TTT(u)du)eeej.
+The densityfforτis now readily derived as
+f(x)dx=P(τ∈(x,x+ dx])
+36 3. A MODEL FOR STOCHASTIC INTEREST RATES
+=
+p∑
+j=1
+πππ
+x∏
+0
+(III+TTT(u)du)eeejtj(x)dx
+=πππ
+x∏
+0
+(III+TTT(u)du)ttt(x)dx,
+so that
+f(x) =πππ
+x∏
+0
+(III+TTT(u)du)ttt(x).(19)
+The distribution functionFforτis obtained by
+1−F(s) =P(τ >s)
+=P(X s∈{1,2,...,p})
+=
+p∑
+j=1
+P(Xs =j)
+=πππ
+x∏
+0
+(III+TTT(u)du)eee.
+□
+We can think about a phase–type distribution as a distribution with a stochastic hazard rate
+(i.e. a hazard process) with
+h(u) =λX(u)(u)
+for some (deterministic) hazard functionsλi(u) and Markov jump process{X(u)}u≥0. Hence
+we get the following representation for the c.d.f. of a phase–type distribution.
+Theorem 3.6.Assume thatτ∼IPH(πππ,TTT(t))and let{X(u}u≥0denote the underlying
+Markov jump process. Then the survival function ¯Fofτhas the following representa-
+tion
+¯F(x) =E
+(
+exp
+(
+−
+∫ x
+0
+tX(u)(u)du
+))
+,
+wherettt(u) = (t1(u),...,tp(u))′=−TTT(u)eeeare the exit rates.
+We shall extend this result in Theorem 4.4, where an alternative probabilistic proof is given.
+We the following incremental property as well.
+2. PHASE–TYPE DISTRIBUTIONS 37
+Theorem 3.7.Ifτ∼IPH(πππ,TTT(t))then
+P(τ >s+t|τ >s) =πππ∏s
+0(III+TTT(u)du)
+πππ∏s
+0(III+TTT(u)du)eee
+s+t∏
+s
+(1 +TTT(u)du)eee
+so that
+τ−s|{τ >s}∼IPH
+(
+ααα,SSS(·)
+)
+,
+whereSSS(u) =TTT(s+u)and
+ααα=πππ∏s
+0(III+TTT(u)du)
+πππ
+∏s
+0(III+TTT(u)du)eee.
+Proof.Make a drawing!□
+Corollary 3.8.Ifτ∼IPH(πππ,TTT(t))andT TT(t 1)andTTT(t 2)commute for allt 1,t 2≥0,
+then the densityfand the distribution functionFofτare given by
+f(x) =πππexp
+(∫ x
+0
+TTT(u)du
+)
+ttt(x)
+F(x) = 1−πππexp
+(∫ x
+0
+TTT(u)du
+)
+eee.
+Proof.If allT TT(u) commute with each other, then by Theorem 1.13, p. 12, the product
+integral becomes a matrix exponential, i.e.
+t∏
+s
+(III+TTT(u)du) = exp
+(∫ t
+s
+TTT(u)du
+)
+.
+□
+An important special case where all matricesTTT(x) commute is when
+TTT(x) =λ(x)TTT(20)
+for some non–negative real functionλ(x) and constant intensity matrixTTT. Hereλ(x) scales
+the evolution of time in the same way for all states involved.
+Definition 3.9:Let IPH(πππ,TTT(x)) be a phase–type representation. IfT TT(x) satisfies
+(20), then we write
+IPH(πππ,TTT(x)) = IPH(πππ,TTT,λ(x)).
+Ifλ(x)≡1, then we simplly write PH(πππ,TTT), which corresponds to the classical time–
+homogeneous phase–type distributions.
+Ifτ∼IPH(πππ,TTT,λ(x)), thenτcan be obtained from a simple transformation of aX∼
+PH(πππ,TTT).
+38 3. A MODEL FOR STOCHASTIC INTEREST RATES
+Theorem 3.10.τ∼IPH(πππ,TTT,λ)if and only if
+∫ τ
+0
+λ(u)du∼PH(πππ,TTT).
+Proof.LetX∼PH(πππ,TTT). Sinceλ(u)>0 we notice that
+τ >y⇐⇒
+∫ τ
+0
+λ(u)du>
+∫ y
+0
+λ(u)du.
+Hence
+P
+(∫ τ
+0
+λ(u)du>
+∫ y
+0
+λ(u)du
+)
+=P(τ >y)
+=πππexp
+(
+TTT
+∫ y
+0
+λ(u)du
+)
+eee,
+where the latter equalsP
+(
+X>
+∫y
+0 λ(u)du
+)
+forX∼PH(πππ,TTT).□
+Finally, we mention the fact that the class of distributions PH(πππ,TTT) is dense in the class of
+distributions on the positive reals. This means, that for any given distributionFon (0,∞),
+we can find a sequence (πππn,TTTn),n≥1 such that
+τn
+∼→X,
+(weak convergence) whereX∼Fandτn∼PH(πππn,TTTn). This, of course, also implies that
+the different classes of IPH are also dense since they contain the class PH as a special case.
+Another proof of this follows from the continuous mapping theorem and Theorem 3.10.
+3. Markovian interest rates
+The classical Markovian life–insurance models provide fine examples of time–inhomogeneous
+phase–type distribution, describing the distribution of the time until death from different
+states. In these examples, the transition rates are known with specific biometric interpreta-
+tions.
+We now turn to a more surprising application of phase–type distributions towards stochastic
+interest rates, in which the transition rates do not possess a physical interpretation, but are
+simply present for the sake of fitting a model adequately.
+The model of interest rates is as follows. Let{X(t)}t≥0be a Markov jump process defined
+on a finite state–spaceE={1,2,...,p}with intensity matrixMMM(t) ={µij(t)}i,j∈E.
+We then define the spot (interest) rater(u) at timeuby
+r(u) =rX(u)(u),(21)
+wherer i(u),i= 1,...,p, are deterministic functions. Letr rr(t) =
+(
+r1(t),...,rp(t)
+)′
+denote the
+column vector of interest rate functions.
+3. MARKOVIAN INTEREST RATES 39
+The spot rates give rise to a zero–coupon bond with expirationT >0, defined in terms of
+its bond prices as
+B(t,T) =E Q
+
+ e−
+∫T
+t rX(u) du
+⏐⏐⏐⏐⏐F(t)
+
+,0≤t≤T,(22)
+whereF(t) =σ(X(u) : 0≤u≤t) is theσ–algebra generated by{X(u)}u≥0andQis a risk–
+neutral measure (this is not important at the moment and we will return to this point later).
+It means that the transitions move according toQ.
+If all possible interest rates are non–negative, thenTTT(u) =MMM(u)−∆∆∆(rrr(u)) are sub–intensity
+matrices. Ifπππ= (π1,...,πp) withπi =P(X(0) =i) denotes the initial distribution, then the
+pair (πππ,TTT(u)) defines a representation for an IPH. The corresponding exit rate vectors are
+ttt(u) =−TTT(u)eee=−(MMM(u)−∆∆∆(rrr(u)))eee= ∆∆∆(rrr(u))eee=rrr(u).
+But then from Theorem 3.6 we get that if
+P(τ >T) =EQ
+(
+e−
+∫T
+0 tX(u)(u)du
+)
+=E Q
+(
+e−
+∫T
+0 rX(u)(u)du
+)
+=B(0,T),
+withτ∼PH(πππ,TTT(u)), and where the last equality follows from (22) witht= 0.
+More generally:
+Theorem 3.11.Let
+DDD(t,T) =
+T∏
+t
+(III+ (MMM(u)−∆∆∆(rrr(u)))du).(23)
+Then price of the zero–coupon bond(22)satisfies
+B(t,T) =E Q
+
+ exp
+(
+−
+∫ T
+t
+rX(u)(u)du
+)⏐⏐⏐⏐⏐⏐
+X(t)
+
+ =eee′
+X(t)DDD(t,T)eee.(24)
+Ifr k(t)≥0for allk, thenT→B(t,T)is the survival function of an IPH distributed
+random variable,τ(t), with initial distributioneee′
+X(t) and intensity matricesMMM(x+t)−
+∆∆∆(rrr(x+t)),x≥0.
+Proof.This is simply a new Markov jump process initiating at timetin stateX(t), and the
+right–hand side is simply an expression for the survival function of the time until absorption,
+as started fromt.□
+40 3. A MODEL FOR STOCHASTIC INTEREST RATES
+A slight modification may allow for negative interest. Assume that allr i(x) are bounded
+from below by aρ. We may e.g. takeρas
+ρ= max
+(
+0,−min
+i∈E
+inf
+x≥0
+ri(x)
+)
+.
+We may takeρ= 0 if all interest rates are non–negative. Otherwise,−ρprovides a lower
+bound for all of them. Then we have the following result.
+Theorem 3.12.The price of the zero–coupon bond(22)satisfies
+B(t,T) =E Q
+
+ exp
+(
+−
+∫ T
+t
+rX(u)(u)du
+)⏐⏐⏐⏐⏐⏐
+X(t)
+
+ =eee′
+X(t)DDD(t,T)eee.(25)
+Conditional onX(t) =i,
+T→e−ρ(T−t)B(t,T)
+is the survival function for an IPH distributed random variable,τ(t), with initial dis-
+tributioneee′
+i and intensity matricesMMM(x+t)−∆∆∆(rrr(x+t))−ρIII,x≥0.
+Proof.Formula (25) follows as for (24) above. Next, by Corollary 1.15, p. 13, we notice
+that
+e−ρ(t−s)
+t∏
+s
+(
+III+
+[
+MMM(u)−∆∆∆(rrr(u))
+]
+du
+)
+=
+t∏
+s
+(
+III+
+[
+MMM(u)−∆∆∆(rrr(u))−ρIII
+]
+du
+)
+.
+The matrixMMM(x)−∆∆∆(rrr(x))−ρIIIis now a sub–intensity matrix and the result follows.□
+Corollary 3.13.Conditional onX(t) =i, the forward ratef(t,T)equals the hazard
+rate atTfor the random variableτ(t)∼PH(eeei,MMM(x+t)−∆∆∆(rrr(T))−ρIII), lessρ. i.e.
+f(t,T) = fτ(t)(T)
+1−Fτ(t)(T)−ρ.(26)
+The yield curve equals
+T→Y(t,T) =− log ¯Fτ(t)(T)
+T−t −ρ,
+Proof.We recall that the forward ratef(t,T) is defined by
+f(t,T) =−∂
+∂TlogB(t,T).
+Using Theorem 3.12, we may write
+B(t,T) = eρ(T−t)¯Fτ(t)(T),
+3. MARKOVIAN INTEREST RATES 41
+where ¯Fτ(t)(T) = 1−Fτ(t)(T) denotes the survival function forτ(t)∼IPH(eee′
+X(t),MMM(x+t)−
+∆∆∆(rrr(x+t))−ρIII). Then clearly
+−∂
+∂TlogB(t,T) =−ρ+fτ(t)(T)
+1−Fτ(t)(T),
+wheref τ(t)denotes the density function forτ(t).
+Similarly, the yield curve then equals
+T→Y(t,T) =− log(B(t,T))
+T−t
+=−log ¯Fτ(t)(T)
+T−t −ρ.
+□
+Another immediate consequence of Theorem 3.12 is the following.
+Corollary 3.14.Assume that all interest rates are non–negative. Then conditional
+onX(t) =i, the random variableτ(t)∼IPH(eee′
+i,MMM(t+x)−∆∆∆(rrr(t+x))),x≥0then
+has a c.d.f. given by
+Fτ(t)(T) = 1−B(t,T) =EQ
+
+
+∫ T
+t
+rX(y)(y)e−
+∫y
+t rX(u)(u)du dy
+⏐⏐⏐⏐⏐X(t) =i
+
+.
+Proof.This follows from Theorem 3.12 withρ= 0 and
+fτ(t)(y) =− ∂
+∂yB(t,y) =E Q
+(
+rX(y)(y)e−
+∫y
+t rX(u)(u)du
+⏐⏐⏐⏐X(t) =i
+)
+.
+Integrating the expression then yields the result.□
+For the case wheret= 0, the above results are reduced to the following.
+Corollary 3.15.Assume that all interest rates are non–negative. Letτ∼
+IPH(πππ,MMM(x)−∆∆∆(rrr(x)))and letπππ= (π1,...,πp)′denote the (initial) distribution of
+X(0). Then
+P(τ >T) =E Q
+
+exp
+(
+−
+∫ T
+0
+rX(u)(u)du
+)
+,(27)
+Fτ(T) =E Q
+(∫ T
+0
+rX(y)(y)e−
+∫y
+0 rX(u)(u)du dy
+)
+,(28)
+f(0,T) = fτ(T)
+1−Fτ(T).(29)
+42 3. A MODEL FOR STOCHASTIC INTEREST RATES
+The densityf τ(t) then has the interpretation of being the expected present value of the
+current interest rate accumulated in a small time interval aroundt, andF τ(T) is the present
+value of the total accumulated interest rate during [0,T].
+The Markovian interest rates have two nice and useful properties for life–insurance models:
+they can be fitted to real bond data (or theoretical models), and they fit nicely into the
+framework of product integral representations for reserves and higher–order moments.
+We first consider how to fit to real data or calibrate to other known models.
+4. Estimation of phase–type distributions
+First, we need to assess the nature of the interest rate data. Stochastic interest rate models
+are often calibrated to bond prices at different maturities or, equivalently, to yield curves.
+We will use the bond prices at different maturities as our basic observable data. Assume that
+we have observedB(0,T i) at maturitiesT 1,T 2,...,TN. Then this corresponds to observing
+P(τ >Ti),i= 1,...,N, whereτ∼IPH(πππ,TTT(u)). This is again equivalent to observing a
+histogram with breaks atT i, bin widths ofT i+1−Ti and corresponding probability mass of
+B(0,Ti)−B(0,Ti+1).
+The histogram comprises information of a hypothetical sample of realisations ofτ, but the
+individual values of theτ’s in the sample are unknown. Since we do not have a sample
+size either, we shall consider the data to beweighted data, where the data points are the
+midpoints of the bins, i.e.
+τi = Ti +Ti+1
+2 ,i= 1,...,N−1,
+with weights
+wi =Ti+1−Ti,i= 1,...,N.
+Hence, we need to be able to fit the weighted datay yy= (τi,wi),i= 1,...,N−1. We assume
+that the phase–type distribution is time–homogeneous PH(πππ,TTT).
+The likelihood function is then given by
+L(yyy;πππ,TTT) =
+n∏
+i=1
+(
+πππeTTTτittt
+)wi
+or log–likelihood
+ℓ(yyy;πππ,TTT) =
+n∑
+i=1
+wi log
+(
+πππeTTTτittt
+)
+.
+There is no explicit expression for the maximum likelihood estimator. Since the number of
+parameters is large, a general–purpose maximiser can become unstable and slow.
+Alternatively, sinceτi are the times until absorption of an underlying Markov jump process,
+the problem can also be seen as an incomplete data problem. Here, the complete data are the
+full trajectories until absorption, while the incomplete data are the times until absorption.
+4. ESTIMATION OF PHASE–TYPE DISTRIBUTIONS 43
+There are several ways to deal with incomplete data estimation, and one of the most pop-
+ular ones is the so-called Estimation–Maximisation (EM) algorithm, which turns out to be
+particularly well-suited for our case.
+Assume that the parameters to be estimated areθθθ(= (πππ,TTT) in our case), wherey yydenotes
+the vector of incomplete data andX XXthe random vector corresponding to the complete
+(unknown) data. Letℓc denote the complete data likelihood. Then the EM algorithm works
+as follows.
+0. initialize with some “arbitrary”θθθ0 and letn= 0.
+1. (E-step) Calculate the function
+h :θθθ→Eθθθn
+(
+ℓc(θθθ;XXX)|YYY=yyy
+)
+.
+2. (M-step) Letθθθn+1 := argmaxθθθh(θθθ).
+3. n=n+1; GOTO 1.
+In step 0, we initiate the algorithm by choosing any starting valueθ θθ0 forθθθ. Under these
+parameters, the conditional expectation of the complete data likelihood given our incomplete
+data is calculated, and in step 2, we find the parametersθθθ1 that maximise the expectation.
+Replacingθθθ0 byθθθ1, we may then continue in this way. It can be shown that the likelihood
+increases in every iteration step, which makes the algorithm convergent. It is not certain if
+it converges to a global or only local maximum, so different initiations may be needed to
+verify this point.
+Let us analyse how this algorithm looks for phase-type data.
+(a)Complete data likelihoodℓc.
+Data is now full trajectories of the underlying Markov jump processes, which generate the
+times until absorptionτ1,...,τp. Let us consider one of them,y yy=τ1 say. ThenXXXis the
+full trajectory which gets absorbed exactly at timeτ 1. Describe the trajectory by (i k,uk),
+k= 0,...,n, whereik are thekth state visited (k= 0 meaning the initial state), andu k is the
+time spent in that state until jumping out of it again.
+Denote
+ΛΛΛ ={λij}i,j=1,...,p+1=
+(
+TTT ttt
+000 0
+)
+,
+λi =−λii andq ij =−tij/tii.
+Since the sojourn times are conditional indpendent and exponentially distributed, we get the
+complete data likelihoodL c to be
+Lc(τ1;πππ,TTT) =πi0e−λi0u0λi0qi0i1···qin−1ine−λinunλinqin,p+1
+=πi0e−λi0u0λi0i1···λin−1ine−λinunλin,p+1
+44 3. A MODEL FOR STOCHASTIC INTEREST RATES
+=
+
+
+p∏
+i=1
+πBi
+
+
+
+
+p∏
+i=1
+∏
+j̸=i
+λNij
+ij
+
+
+
+
+p∏
+i=1
+e−Ziλi
+
+
+
+
+p∏
+i=1
+λNi
+i,p+1
+
+
+=
+
+
+p∏
+i=1
+πBi
+
+
+
+
+p∏
+i=1
+∏
+j̸=i
+λNij
+ij e−Ziλij
+
+
+
+
+p∏
+i=1
+λNi
+i,p+1e−Ziλi,p+1
+
+,
+whereB i ={Z(0) =i}the indicator for whether initiation in stateihas taken place,Nij the
+total number of jumps fromitoj,i̸=j,Z i the total time spent in stateiuntil absorption,
+andN i the indicator for wether absorption takes place through a jump fromi.
+For i.i.d. datayyy= (τ1,...,τn), the complete data likelihood has the exact same form, with
+the only changes ofB i noe being the number of initiations from statei, etc.
+The complete data log–likelihood then becomes
+ℓc(τ1;πππ,TTT) =
+p∑
+i=1
+Bi log(πi) +
+p∑
+i=1
+∑
+j̸=i
+[
+Nij log(λij)−Ziλij
+]
++
+p∑
+i=1
+Ni
+[
+log(λi,p+1)−λi,p+1Zi
+]
+=
+p∑
+i=1
+Bi log(πi) +
+p∑
+i=1
+∑
+j̸=i
+[
+Nij log(tij)−Zitij
+]
++
+p∑
+i=1
+Ni
+[
+log(ti)−tiZi
+]
+.
+It is then easy to see that the maximum ofℓc(τ1;πππ,TTT) is attained for
+ˆπi = Bi
+n , ˆtij = Nij
+Zi
+,and ˆti = Ni
+Zi
+.
+Another important observation is thatℓc(τ1;πππ,TTT) is linear in the sufficient statisticsBi,Ni,Nij
+andZ i. This is equivalent to the model being a (curved) exponential family.
+(b)The EM–algorithm
+In this case, E–step reduces to computing the conditional expected values of the sufficient
+statistics given (incomplete) data, and the M–step will be as the estimates above, replacing
+the sufficient statistics by their conditional expectations. Indeed, the E–step becomes
+Eθθθn
+(
+ℓc(θθθ;XXX)|YYY=yyy
+)
+=
+p∑
+i=1
+E(Bi|YYY=yyy)log(πi) +
+p∑
+i=1
+∑
+j̸=i
+[
+E(Nij|YYY=yyy)log(tij)−E(Zi|YYY=yyy)tij
+]
++
+p∑
+i=1
+E(Ni|YYY=yyy)
+[
+log(ti)−tiZi
+]
+while the M–step amounts to
+ˆπi = E(Bi|YYY=yyy)
+n , ˆtij = E(Nij|YYY=yyy)
+E(Zi|YYY=yyy) ,and ˆti = E(Ni|YYY=yyy)
+E(Zi|YYY=yyy).
+Hence, it is enough to compute the conditional expectation.
+4. ESTIMATION OF PHASE–TYPE DISTRIBUTIONS 45
+First considern= 1 andy=τ 1. Then
+E(Bi|Y=y) =E(1{Z(0) =i}|Y=y)
+=P(Z(0) =i|Y=y)
+= P(Z(0) =i,Y∈dy)
+P(Y∈dy)
+= P(Z(0) =i)P(Y∈dy|X0 =i)
+P(Y∈dy)
+= πieee′
+ieTTTyttt
+πππeTTTyttt .
+Regarding the occupations in statei,
+E(Zi|Y=y) =E
+(∫ y
+0
+1{Z(u) =i}du
+⏐⏐⏐⏐ Y=y
+)
+=
+∫ y
+0
+P(Z(u) =i|Y=y)du
+=
+∫ y
+0
+P(Y∈dy|Z(u) =i)P(Z(u) =i)
+P(Y∈dy) du
+=
+∫ y
+0
+eee′
+ieTTT(y−u)tttπππeTTTueeei
+πππeTTTyttt du.
+This integral can be computed using Van Loan by
+exp
+
+
+(
+TTT tttπππ
+000T TT
+)
+y
+
+ =
+
+eTTTy ∫y
+0 eTTT(y−u)tttπππeTTTu du
+000 e TTTy
+
+,(30)
+which then provides all ingredients for computingE(Z i|Y=y).
+ConverningN ij, we write
+E(Nij|Y=y) =E(Nij1{Y∈dy})
+fY (y)
+=
+∑
+ℓ
+E(Nij1{Z(y−) =ℓ,Y∈[y,y+ dy)})
+fY (y)dy
+=
+∑
+ℓ
+E(Nij|Z(y−) =ℓ,Y∈[y,y+ dy))P(Y∈[y,y+ dy)|Z(y−) =ℓ)P(Z(y−) =ℓ)
+fY (y)dy
+=
+∑
+ℓ
+E(Nij|Z(y−) =ℓ)tℓdyP(Z(y−) =ℓ)
+fY (y)dy
+=
+∑
+ℓ
+E(Nij1{Z(y−) =ℓ})
+fY (y) tℓ
+=
+∑
+k,ℓ
+πk
+E(Nij1{Z(y−) =ℓ}|Z(0) =k)
+fY (y) tℓ.
+Now the expectation
+E(Nij1{Z(y−) =ℓ}|Z(0) =k) =E(Nij1{Z(y) =ℓ}|Z(0) =k)
+46 3. A MODEL FOR STOCHASTIC INTEREST RATES
+is nothing but the partial reserve (with zero interest rate) for the case where the only payment
+is 1 when there is a jump fromitoj, and zero otherwise, givenZ(0) =kand on the event
+thatZ(y) =ℓ. Hence, it must be thekℓth element of
+∫ y
+0
+eTTT(y−u)eeeieee′
+jtijeTTTu du,
+i.e.
+E(Nij1{Z(y−) =ℓ}|Z(0) =k) =
+∫ y
+0
+eee′
+keTTT(y−u)eeeieee′
+jtijeTTTueeeℓdu
+=tijeee′
+j
+∫ y
+0
+eTTT(y−u)eeeℓeee′
+ktijeTTTu dueeei.
+Thus
+E(Nij|Y=y) =tij
+∑
+k,ℓ
+πktℓeee′
+j
+∫ y
+0
+eTTT(y−u)eeeℓeee′
+ktijeTTTu dueeei
+=tijeee′
+j
+∫ y
+0
+eTTT(y−u)tttπππeTTTu dueeei.
+Again, this expression can be obtained from (30).
+Finally, forN i we get
+E(Ni|Y=y) =P(Z(y−) =i|Y=y)
+= P(Y∈dy|Z(y−) =i)P(Z(y−) =i)
+P(Y∈dy)
+=πππeTTTyeeeiti
+πππeTTTyttt .
+Forndatapoints, we simply have to sum over the formulae:
+E(Bi|Y=y) =
+n∑
+k=1
+πieee′
+ieTTTτkttt
+πππeTTTτkttt
+E(Zi|Y=y) =
+n∑
+k=1
+∫ τk
+0
+eee′
+ieTTT(τk−u)tttπππeTTTueeei
+πππeTTTτkttt du
+E(Nij|Y=y) =
+n∑
+k=1
+tijeee′
+j
+∫ τk
+0
+eTTT(τk−u)tttπππeTTTu dueeei
+E(Ni|Y=y) =
+n∑
+k=1
+πππeTTTτkeeeiti
+πππeTTTτkttt .
+(c)Weighted data.
+Now suppose that there are repeated data points: there areMdifferent data pointsτk, which
+are all repeatedn k≥1 times such thatn1 +···nM =n. Then we get
+E(Bi|Y=y) =
+M∑
+k=1
+nk
+πieee′
+ieTTTτkttt
+πππeTTTτkttt
+4. ESTIMATION OF PHASE–TYPE DISTRIBUTIONS 47
+E(Zi|Y=y) =
+M∑
+k=1
+nk
+∫ τk
+0
+eee′
+ieTTT(τk−u)tttπππeTTTueeei
+πππeTTTτkttt du
+E(Nij|Y=y) =
+M∑
+k=1
+nktijeee′
+j
+∫ τk
+0
+eTTT(τk−u)tttπππeTTTu dueeei
+E(Ni|Y=y) =
+M∑
+k=1
+nk
+πππeTTTτkeeeiti
+πππeTTTτkttt .
+Then
+ˆπi = E(Bi|YYY=yyy)
+n =
+M∑
+k=1
+nk
+n
+πieee′
+ieTTTτkttt
+πππeTTTτkttt .
+Similarly, if we divide through withnin the remaining formulae,
+E(Zi|Y=y)
+n =
+M∑
+k=1
+nk
+n
+∫ τk
+0
+eee′
+ieTTT(τk−u)tttπππeTTTueeei
+πππeTTTτkttt du
+E(Nij|Y=y)
+n =
+M∑
+k=1
+nk
+n tijeee′
+j
+∫ τk
+0
+eTTT(τk−u)tttπππeTTTu dueeei
+E(Ni|Y=y)
+n =
+M∑
+k=1
+nk
+n
+πππeTTTτkeeeiti
+πππeTTTτkttt ,
+then theM–step estimates remain the same.
+The fractionw i =n i/nis a weight. In a histogram, the data points are in the bins, and
+the weight is the probability contribution. We may take e.g., the midpoint of a bin as a
+representative for the data falling into that bin.
+If we want to fit to a histogram, it can be a problem if the sum of the weights is (much) less
+than 1. This can happen if the survival function we consider, or equivalently the bond price,
+is not observed at very many points. If the bond price for maturity 30 years, for example,
+equals 0.38, then the survival function of the corresponding phase-type distribution at the
+highest observed point is 0.38, significantly larger than the other weights. This is because we
+do not have observations for maturities larger than 30. In this case, it is better to consider
+the largest maturity to be a right-censored data point.
+(d)Censored data.
+We consider only right censoring, since we do not need other types. Assuming thatτ n, the
+largest value, is the only right censored point in the sample, we must modify the expectation
+ofE(B i|Y=τn) toE(B i|Y >τn) and similarly for the rest. Thus we get
+E(Bi|Y=y) =
+n−1∑
+k=1
+πieee′
+ieTTTτkttt
+πππeTTTτkttt +πieee′
+ieTTTτneee
+πππeTTTτneee
+E(Zi|Y=y) =
+n−1∑
+k=1
+∫ τk
+0
+eee′
+ieTTT(τk−u)tttπππeTTTueeei
+πππeTTTτkttt du+
+∫ τn
+0
+eee′
+ieTTT(τn−u)eeeπππeTTTueeei
+πππeTTTτkeee du
+48 3. A MODEL FOR STOCHASTIC INTEREST RATES
+E(Nij|Y=y) =
+n−1∑
+k=1
+n−1∑
+k=1
+tijeee′
+j
+∫ τk
+0
+eTTT(τk−u)tttπππeTTTu dueeei +tijeee′
+j
+∫ τn
+0
+eTTT(τn−u)eeeπππeTTTu dueeei
+E(Ni|Y=y) =
+n−1∑
+k=1
+πππeTTTτkeeeiti
+πππeTTTτkttt .
+Hence, all density expressions are simply replaced by survival function expressions instead,
+and in the last equation, there is no contribution toN i for the right censored observation
+since absorption did not take place yet by timeτn.
+(e)Fitting to IPH.
+It is possible to fit to an IPH(πππ,TTT,λ) with relatively minor modifications using Theorem 3.10.
+In each iteration, the data are transformed back to corresponding PH(πππ,TTT) data, in which
+the appropriateEandMsteps are then performed. This results in updated parameters
+(πππ,TTT). The functionλ(x) =λ(x;θ) may be parameter dependent as well, and a separate
+optimisation ofλis performed. In the next iteration, data are no transformed according to
+the updatedλ(x;θ), etc.
+It can be shown that this is again an EM–algorithm.
+(f)Computation. Fortunately, we can make use of the R package “matrixdist” for fitting to
+weighted, censored phase–type data.
+5. Estimation of PH bond models
+Consider bond pricesB(0,T i) available at different maturitiesT 1,T 2,...,Tn. Then according
+to Theorem 3.12 we have that
+B(0,Ti) =πππDDD(0,Ti)eee= eρTiP(τ >Ti), i= 1,2,...,n,
+for someρ>0 and whereτ∼IPH(πππ,MMM(u)−∆∆∆(rrr(u))−ρIII). Thenρmust satisfy that
+e−ρTiB(0,Ti)≤1, i= 1,2,...,n.
+This can be achieved by choosing
+ρ= max
+i∈{1,...,n}
+(
+logB(0,T i)
+Ti
+)
+.
+In the life–insurance context in Denmark, by regulation, the bond prices (discounting factors)
+must be computed from discrete forward rates,f d(0,Ti), published by the Danish Financial
+Supervisory Authority. Thus
+B(0,Ti) =
+(
+1 +fd(0,Ti)
+)−Ti
+from which
+logB(0,T i)
+Ti
+=−log(1 +fd(0,Ti)).
+5. ESTIMATION OF PH BOND MODELS 49
+Hence
+ρ= max
+i
+(
+−log(1 +fd(0,Ti))
+)
+=−min
+i
+log(1 +fd(0,Ti)).(31)
+Hence calibrating to dataB(0,T i),i= 1,...,ncan be done by fitting PH or IPH distributions
+to e−ρTiB(0,Ti) using an EM algorithm. The possible interest rates can either be selected by
+the EM algorithm (referred to as unrestricted interest rates) or fixed to values (or functions)
+of our choice (restricted interest rates).
+In the former case, we obtain a maximum likelihood estimate ( ˆπππ,ˆTTT(x)) for the parameters.
+The estimate forMMM(x) is then readily obtained from
+ˆMMM(x) = ˆTTT(x) + ∆∆∆(ttt(x)).
+To find the induced interest rates, we also have from Theorem 3.12 that
+ˆTTT(x) = ˆMMM(x)−∆∆∆(rrr(x))−ρIII
+so we conclude that the estimated exit ratesttt(x) must satisfy
+ttt(x) =rrr(x) +ρeee,
+whereeeeis the vector of ones. Hence, the induced interest rates are given by
+rrr(x) =ttt(x)−ρeee.
+Neither the transition rates nor the interest rates are unique, but the resulting discount factor
+(bond price) is invariant under different representations, which is all that matters regarding
+reserving in the insurance context.
+If, in turn, we decide to choose the possible range of interest ratesr i(x) ourselves, then the
+EM–algorithm is modified not to update the exit rates.
+In this case, the exit rates will be fixed at
+ttt(x) =rrr(x) +ρeee
+so
+ˆMMM(x) = ˆTTT(x) + ∆∆∆(rrr(x)) +ρIII.
+While the parametrisation of the transition rates may not be unique, the interest rates remain
+fixed.
+Remark 3.16:By fixing the exit rates, the class of phase–type distributions may no longer
+be dense. If, for example, we fixr rr(x) =reee, then only the exponential distribution with
+parameterris reachable.
+We now present two examples of fitting to real data and one example to a theoretical model.
+The estimation is computed using the R–packagematrixdist.
+50 3. A MODEL FOR STOCHASTIC INTEREST RATES
+Example 3.17(Fitting to observed bond prices with restricted interest rates):Bond prices,
+B(0,T) as of 31/12/2003 (time zero) with maturitiesT= 1,2,...,30 years are available from
+the Danish Financial Supervisory Authority and given by 0.9755051, 0.9434934, 0.9059545,
+0.8679149, 0.8251354, 0.7857250, 0.7472528, 0.7075066, 0.6679984, 0.6286035, 0.5951316,
+0.5625969, 0.5310441, 0.5005108, 0.4710280, 0.4448469, 0.4197550, 0.3958013, 0.3728296,
+0.3508858, 0.3319907, 0.3140894, 0.2970098, 0.2808430, 0.2654229, 0.2508400, 0.2369349,
+0.2237965, 0.2112725, 0.1994495, respectively.
+This corresponds to an empirical survival distribution to which we can then fit phase–type
+distributions of different dimensions. Regarding the discretisation, we let 0.5+i,i= 0,...,29
+denote the data points with probability massB(i)−B(i+ 1), whereB(0) = 1, and a right
+censored data point at 30 with probability massB(30) = 0.1994495. Since all observed bond
+prices are less than one, we haveρ= 0, corresponding to an environment with non-negative
+interest rates.
+We usedp= 2,3,4,5,10 and 15 phases, with state–wise interest rates beingr p
+i =i/(10p),
+i= 1,...,pfor the different dimensionsp. Underlying this choice is the assumption that the
+interest rates fluctuate between 1% and 10%, and ther i’s are obtained as the points that
+divide the interval [0,0.1] intop, including the right endpoint. The vectorsr rrp = (rp
+1,...,rp
+p)′
+will serve as exit rate vectors of the phase–type distributions to be fitted.
+In Figure 3 (left), we have plotted the phase–type fits to the empirical survival curve for di-
+mensionsp= 2,3,4,5. At dimension 3, we obtain a decent fit and excellent fits for dimensions
+4 and 5. The likelihood values for 4 cases are -3.178171, -3.16838,-3.166633, and -3.166182.
+Further experimentation with dimensions 10 and 15 resulted in likelihoods of -3.165002 and
+-3.164654, respectively. However, the plots of bond prices and yields are indistinguishable
+from the plots corresponding to dimension 5, see Figure 4. We can also assess the quality of
+the fits by plotting the estimated density function vs. the weighted data, shown in Figure
+5. Again the plots for dimensionsp= 5,10,15 are almost indistinguishable. Therefore, we
+conclude that dimension 4 or 5 will suffice toapproximatethe bond prices.
+The estimates of the sub–intensity matrixMMM−∆∆∆(rrr) (under a risk neutral measureQ) for
+dimensionsp= 3,4,5 are given by
+
+
+−0.13 0.1 0
+0−0.41 0.34
+0.14 0−0.24
+
+,
+
+
+−0.25 0.22 0.01 0
+0.14−1.11 0.75 0.18
+0.06 0.29−0.63 0.2
+0.09 0.22 0.65−1.05
+
+
+,
+
+
+−0.26 0.02 0.06 0.07 0.08
+0.07−1.68 0.69 0.23 0.65
+0.19 0.32−1.99 0.93 0.48
+0.04 0.35 0.27−1.2 0.46
+0.07 0.82 0.07 0.8−1.85
+
+
+.
+To fit the bond prices, the initial distributions of Markov processes were all on the form
+(1,0,...,0) of appropriate dimension, i.e., initiation in state 1.□
+Example 3.18(Fitting to 2019 bond prices with unrestricted interest rates):To illustrate
+the applicability of our methods also in the case of a negative interest rate environment,
+we can instead fit to bond prices as of 31/12/2019 from the Danish Financial Supervisory
+5. ESTIMATION OF PH BOND MODELS 51
+0 5 10 15 20 25 30
+0.2 0.4 0.6 0.8 1.0
+Maturity
+Bond price
+PH(2)
+PH(3)
+PH(4)
+PH(5)
+0 5 10 15 20 25 30
+0.025 0.030 0.035 0.040 0.045 0.050
+Maturity
+Yield
+PH(2)
+PH(3)
+PH(4)
+PH(5)
+Figure 3.Phase–type fits to Zero-coupon bond prices (left) and corresponding yield curves
+(right) for dimensionp= 2,3,4,5.
+0 5 10 15 20 25 30
+0.2 0.4 0.6 0.8 1.0
+Maturity
+Bond price
+PH(5)
+PH(10)
+PH(15)
+0 5 10 15 20 25 30
+0.025 0.030 0.035 0.040 0.045 0.050
+Maturity
+Yield
+PH(5)
+PH(10)
+PH(15)
+Figure 4.Phase–type fits to Zero-coupon bond prices (left) and corresponding yield curves
+(right) for dimensionp= 5,10,15.
+Authority; this dataset consists of maturities ofT= 1,2,...,120 years. In this case, we let
+the EM algorithm choose the necessary positive and negative interest rates.
+The first five years have bond prices above one and given by 1.00231736, 1.00403337,
+1.00445679, 1.00382807, and 1.00197787, which reflects the (slightly) negative interest rate
+environment at the time. From (31), we getρ= 0.002314677 as the exponential factor to
+down-scale prices to below one. In Figure 6, we show the phase–type fits to the bond prices.
+We have used the subclass of time–homogeneous Coxian distributions, where initiation is
+52 3. A MODEL FOR STOCHASTIC INTEREST RATES
+0 5 10 15 20 25 30
+0.00 0.01 0.02 0.03 0.04 0.05
+Maturity
+Density
+PH(2)
+PH(3)
+PH(4)
+PH(5)
+0 5 10 15 20 25 30
+0.00 0.01 0.02 0.03 0.04 0.05
+Maturity
+Density
+PH(5)
+PH(10)
+PH(15)
+Figure 5.Fitted phase–type densities vs. weighted data forp= 2,3,4,5 (left) andp=
+5,10,15 (right).
+0 20 40 60 80 100 120
+0.000 0.005 0.010 0.015 0.020
+maturity
+density
+PH(5)
+PH(10)
+PH(15)
+0 20 40 60 80 100 120
+0.000 0.005 0.010 0.015 0.020 0.025 0.030 0.035
+maturity
+yield
+PH(5)
+PH(10)
+PH(15)
+0 20 40 60 80 100 120
+0.0 0.2 0.4 0.6 0.8 1.0
+maturity
+price
+PH(5)
+PH(10)
+PH(15)
+Figure 6.Fitted phase-type densities (left), corresponding yield curves (middle) and bond
+prices (right) for dimensionsp= 5,10,15 based on bond price data as of 31/12/2019.
+always in state 1, and the only possible transitions are from a state,isay, to the following,
+i+ 1, or to exit to the absorbing state.
+If the primary purpose is using the fits as a discounting factor in a life–insurance model, then
+probably all fits could be used (right plot). If the yield curve fitting is the concern, then only
+dimensions 10 and 15 seem to catch the appropriate curvature. Regarding the probability
+density of the phase–type, the 15-dimensional fit is the best.
+5. ESTIMATION OF PH BOND MODELS 53
+To exemplify, we consider the 10–dimensional fit. The fitted intensity matrix, ˆMMM, for
+{X(u)}u≥0, is given by
+
+
+−0.5212 0.5212 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+0.0000−0.5212 0.5212 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+0.0000 0.0000−0.5185 0.5185 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+0.0000 0.0000 0.0000−0.5161 0.5161 0.0000 0.0000 0.0000 0.0000 0.0000
+0.0000 0.0000 0.0000 0.0000−0.5152 0.5152 0.0000 0.0000 0.0000 0.0000
+0.0000 0.0000 0.0000 0.0000 0.0000−0.4664 0.4664 0.0000 0.0000 0.0000
+0.0000 0.0000 0.0000 0.0000 0.0000 0.0000−0.3099 0.3099 0.0000 0.0000
+0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000−0.3099 0.3099 0.0000
+0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000−0.3099 0.3099
+0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+
+
+The matrix contains six different parameter values. The matrix structure is carried over from
+the phase–type fit to the (discounted) bond prices. The blocks with the same parameters
+correspond to Erlang blocks, i.e. convolution of exponential distributions with the same
+parameter.
+The induced (estimated) interest rates (in %) are, respectively,
+−ρ,−ρ,0.03468739,0.28218594,−ρ,4.64627655,−ρ,−ρ,−ρ,3.86252219.
+These should also be counted as parameters.□
+Example 3.19(Fitting to a Vasiˇ cek model):Consider the Vasiˇ cek model
+dr(u) =k(θ−r(u))du+σdWQ(u),
+whereW Q(u) denotes the Wiener process under the equivalent martingale measureQwhere
+k= 0.5,θ= 0.1,σ= 0.2 andr(0) = 0.01. We approximate this model a state–wise determin-
+istic interest model,r X(u)(u) based on an underlying Markov process with 5 and 10 states,
+usingrrr(u) = (r1,...,r5) = (0.02,0.04,0.06,0.08,0.1) andrrr(u) = (r1,...,r10) = (0.01,...,0.1), re-
+spectively. We take the Markov processes as time–homogeneous with 5 and 10 states, re-
+spectively, since the Vasiˇ cek model is stationary. We obtained the following phase–type
+representations forp= 5
+πππ=
+
+
+0.76
+0.24
+0
+0
+0
+
+
+, MMM−∆∆∆(rrr) =
+
+
+−0.02 0 0 0 0
+0−1.72 0 1.68 0
+0 0−2.19 0 2.13
+0 0 1.09−1.17 0
+0.35 0 0 0−0.45
+
+
+.
+54 3. A MODEL FOR STOCHASTIC INTEREST RATES
+and, forp= 10,πππ= (0.63,0.37,0,0,0,0,0,0,0,0)′and
+MMM−∆∆∆(rrr) =
+
+
+−0.06 0.01 0.01 0.01 0 0 0.01 0 0 0
+0−5.89 5.87 0 0 0 0 0 0 0
+0 0−7.21 0 0 0 0 0 7.18 0
+0 0.06 0.02−2.02 0.14 0.05 0.1 1.51 0 0.09
+0 0.12 0.01 0.92−2.58 0.01 0.08 1.3 0 0.08
+0 0.01 0 3.28 0.86−4.32 0.11 0 0 0
+0.01 0.22 0.07 2.18 2.25 0.44−5.9 0.54 0.04 0.09
+0 0 0 0 0.01 0 0−2.61 0 2.51
+0 0 0 0 0.02 2.75 0.13 0−2.99 0
+0.42 0 0 0 0 0.01 0 0.08 0.01−0.63
+
+
+respectively. The corresponding intensity matrices, ˆMMM, then provide us with risk–neutral
+transition rates between the possible interest rates,r= 0.02,0.04,0.06,0.1 orr= 0.01,...,0.1.
+0 5 10 15 20 25 30
+0.5 0.6 0.7 0.8 0.9
+Maturity
+Bond price
+PH(5)
+PH(10)
+0 5 10 15 20 25 30
+0.022 0.024 0.026 0.028 0.030 0.032
+Maturity
+Yield
+PH(5)
+PH(10)
+Figure 7.Phase–type density approximations to corresponding Vasiˇ cek values. The red
+curve corresponds to an approximation with a 5–dimensional state–space, whereas the blue
+curve corresponds to a 10–dimensional state–space.
+Figure 7 illustrates the approximations. While the bond prices provide excellent fits, the
+yield curves are more revealing in exposing discrepancies.
+The assessment regarding the quality of the fits depends on their use. When computing
+reserves or higher-order moments in life insurance with stochastic interest rates being inde-
+pendent of the biometric process, the interest rates are merely used as a discounting factor, in
+which case even a 5–state approximation to the Vasiˇ cek model with a state-wise deterministic
+interest rate model will provide a good fit.□
+CHAPTER 4
+Multi–state Markov models with Markovian interest rates
+1. Markovian interest rates
+Consider a Markov process{Xt}t≥0taking values in a state–spaceE, which defines the
+biometric states of an insured.
+In this chapter, in turn, we will assign a possibly different interest rate to each state. Let
+rrr(t) = (ri(t))i∈E
+denote the vector of interest rates in the different states.
+The state–spaceEmay either be the exact same for both the interest rate process and
+biometric process, or entirely different state–spaces if, e.g. the Markovian interest rate
+model of Chapter 3 is to be employed.
+In that case, there is a Markov jump processX r ={Xr(t)}t≥0with state–spaceE r =
+{1,2,...,p}and intensity matrix ΛΛΛr(t) ={λr
+ij(t)}t≥0, say, such that the corresponding bond
+pricesB(t,T) are given as in Theorem 3.12.
+Additionally, we letX b ={Xb(t)}t≥0denote the Markov jump process governing the transi-
+tion between the biometric states with the state–spaceE b ={1,2,...,q}and intensity matrix
+ΛΛΛb(t) ={λb
+ij(t)}t≥0. Hence, the Markov jump process can be written in the form
+X(t) = (Xb(t),Xr(t)) (32)
+with state–spaceE=E b×Er.
+The product space will be ordered lexicographically, which means that state (i,j) is identified
+with statek(i,j) =i(p−1) +j,j= 1,...,p,i= 1,...,qof the state–space{1,2,...,pq}and
+(i,j)<( ˜i,˜j) iffk(i,j)<k( ˜i,˜j).
+The processesXb andXr may or may not be independent, and the payment processes likewise
+may or may not be independent ofX r. In the independent case the processesX b andX r
+are defined on each their state–space, and the common state–space will be the product set
+of the two. If the processes share states, with the possibility of having simultaneous jumps,
+then we obtain dependency of the processes. Such a case could, e.g. be a rise in the interest
+rate causing an increased intensity of jumping to surrender or free–policy states.
+55
+56 4. MULTI–STATE MARKOV MODELS WITH MARKOVIAN INTEREST RATES
+t
+1
+2
+3
+4
+X(t)
+1
+2
+3
+1
+2
+3
+1
+2
+3
+1
+2
+3
+Figure 1.Lexicographical ordering: for each biometric state (blue), several sub-states
+(orange) define the underlying interest rate level.
+2. The general setup
+Let{X(t)}t≥0be a Markov process on the form (32) with state–spaceE=E b×Er.
+Definition 4.1:A payment process{B(t)}t≥0is a random function on the form
+dB(t) =
+∑
+i∈E
+1{X(t−) =i}
+(
+bi(t)dt+
+∑
+j∈E
+bij(t)dNij(t)
+)
+,(33)
+whereb i(t) are continuous payment rates (negative if premiums), andb ij(t) lump
+sum payments, which occur according to the counting measureN ij(t). The payment
+process defines the (random)cash flow.
+The intensity matrix is decomposed into
+ΛΛΛ(t) = ΛΛΛ 0(t) + ΛΛΛ 1(t),(34)
+where ΛΛΛ 1(t) is a non–negative matrix and, consequently, ΛΛΛ 0(t) a sub–intensity matrix, i.e.
+row sums are non–positive. The counting processN ij(t) is linked to the transitions ofXin
+2. THE GENERAL SETUP 57
+the following way. Upon transition fromitoj,i̸=j, inXat timet, a lump sum payment
+ofb ij(t) will be triggered with probability
+λ1
+ij(t)
+λ0
+ij(t) +λ1
+ij(t).(35)
+Ifi=j, thenN ii(t) is an inhomogeneous Poisson process with intensityλ 1
+ii(t), and a lump
+sum during a sojourn in stateiwill then be triggered in [t,t+ dt) with probabilityλ 1
+ii(t)dt.
+We set
+λ0
+ii(t) =−λ1
+ii(t)−
+∑
+k̸=i
+λ1
+ik(t)−
+∑
+k̸=i
+λ0
+ik(t) =−
+∑
+k
+λ1
+ik(t)−
+∑
+k̸=i
+λ0
+ik(t).
+Henceλ1
+ii(t) are artificially added to the statei, which is compensated for in the diagonal
+for ΛΛΛ 0(t), such that the intensity matrix ΛΛΛ(t) remains unaffected.
+To compute reserves and higher order moments, we letb bb(t) = (bi(t))i∈Edenote the vector
+containing the continuous rates, and define matrices
+BBB(t) =
+{
+bij(t)
+}
+i,j∈E,(36)
+RRR(t) = ΛΛΛ 1(t)•BBB(t) + ∆∆∆(bbb(t)),(37)
+CCC(k)(t) = ΛΛΛ 1(t)•BBB•k(t), k≥2,(38)
+where ∆∆∆(bbb(t)) denotes the diagonal matrix withb bb(t) as diagonal. The operator•denotes
+Schur (entrywise) matrix product, defined byAAA•BBB={aijbij}for matricesAAA={aij}and
+BBB={bij}.
+HenceBBB(t) is the matrix containing the lump payments at transitions and Poisson arrivals
+during sojourns,RRR(t) is the matrix whoseij’th element is the expected reward accumulated
+during [t,t+ dt) upon transition fromitoj, or during a sojourn in stateiifi=j. The
+CCC(k)(t) matrix is more technical to be used when dealing with higher-order moments.
+The interest rate is supposed to be Markovian,r X(t)(t), also generated by the same Markov
+process{X(t)}t≥0.
+In the following example, we consider the simplifications in the representations when assum-
+ing independence.
+Example 4.2(Independence):If the processesX b andX r are independent, then the tran-
+sition intensity matrix ofXis of the form
+ΛΛΛ(t) = ΛΛΛb(t)⊕ΛΛΛr(t) = ΛΛΛb(t)⊗IIIp +IIIq⊗ΛΛΛr(t),
+where⊕denotes the Kronecker sum, and whereIIIn denotes the identity matrix of dimension
+n×n. We recall that the Kronecker product,⊗, is defined byAAA⊗BBB={aijBBB}, where
+AAA={aij}. The interest rates are not influenced by the biometric states, so
+rrr(t) =eee⊗(r1(t),...,rp(t)),
+58 4. MULTI–STATE MARKOV MODELS WITH MARKOVIAN INTEREST RATES
+whereeee= (1,1,...,1)′. If the payment process is independent of the interest rate processX r,
+then
+BBB(t) =BBBb(t)⊗III, bbb(t) =bbbb(t)⊗eee
+for some
+bbbb(t) =
+(
+bb
+1(t),...,bb
+q(t)
+)′
+andB BB(t) =
+{
+bb
+ij(t)
+}
+i,j∈Eb
+.
+Example 4.3:In principle, the model allows for dependency between the interest rate and
+the biometric processes. This can be achieved simply by definining processes on the same
+state–space and being generated by the same underlying Markov jump process, in which
+transition in the interest rates and other rates may e.g. take place simultaneously.
+3. Reserves under Markovian interest rates
+Introduce the matrix of partial state–wise prospective reserves,
+VVV(s,t) =
+{
+Vij(s,t)
+}
+i,j∈E,
+Vij(s,t) =E
+(
+1{X(t) =j}
+∫ t
+s
+e−
+∫x
+s rX(u)(u)du dB(x)
+⏐⏐⏐⏐⏐X(s) =i
+
+.
+WithDDD(s,t), introduced in (23), modified to the setup of this section as
+DDD(s,t) =
+t∏
+s
+(
+III+
+[
+ΛΛΛ(u)−∆∆∆(rrr(u))
+]
+du
+)
+.
+We need the following theorem on the precise structure ofDDD(s,t).
+Theorem 4.4.The elements of the matrixD DD(s,t) ={dij(s,t)}i,j∈Esatisfy
+dij(s,t) =E
+
+ 1{X(t) =j}exp
+(
+−
+∫ t
+s
+rX(u)(u)du
+)⏐⏐⏐⏐⏐⏐
+X(s) =i
+
+, s≤t.
+for alli,j∈E.
+Proof.We show that the matrix defined by the proposed formula ford ij(s,t) coincides with
+the product integral.
+Conditioning on the state ofs+ ds, we get that
+dij(s,t)
+= (1 +λii(s)ds)dij(s+ ds,t)(1−ri(s)ds) +
+∑
+k̸=i
+λik(s)dsdkj(s+ ds,t)(1−ri(s)ds)
+3. RESERVES UNDER MARKOVIAN INTEREST RATES 59
+=d ij(s+ ds,t)(1−ri(s)ds) +λii(s)dsdij(s+ ds,t) +
+∑
+k̸=i
+λik(s)dsdkj(s+ ds,t)
+so that
+−∂
+∂sdij(s,t) =−r i(t)dij(s,t) +
+∑
+k
+λik(t)dkj(s,t).(39)
+In matrix form, this amounts to
+∂
+∂sDDD(s,t) =−
+(
+ΛΛΛ(s)−∆∆∆(rrr(s))
+)
+DDD(s,t).(40)
+Noting thatDDD(t,t) =PPP(t,t) =III, we hence conclude that result holds.□
+Theorem 4.5.The matrix of partial state-wise prospective reservesV VV(s,t)has the
+following integral representation:
+VVV(s,t) =
+∫ t
+s
+DDD(s,x)RRR(x)PPP(x,t)dx.(41)
+Proof.First, we notice that, fori,j∈E,
+Vij(s,t) =
+∑
+k∈E
+E
+(
+1{X(t) =j}
+∫ t
+s
+1{X(x) =k}e−
+∫x
+s rX(u)(u)du dB(x)
+⏐⏐⏐⏐⏐X(s) =i
+
+
+=
+∑
+k∈E
+∫ t
+s
+E
+(
+1{X(t) =j}1{X(x) =k}e−
+∫x
+s rX(u)(u)du dB(x)
+⏐⏐⏐⏐X(s) =i
+)
+=
+∑
+k∈E
+∫ t
+s
+E
+(
+1{X(x) =k}e−
+∫x
+s rX(u)(u)du E
+(
+1{X(t) =j}dB(x)
+⏐⏐Fs,x
+)⏐⏐⏐⏐X(s) =i
+)
+.
+=
+∑
+k∈E
+∫ t
+s
+E
+(
+1{X(x) =k}e−
+∫x
+s rX(u)(u)du E
+(
+1{X(t) =j}dB(x)
+⏐⏐X(x) =k
+)⏐⏐⏐⏐X(s) =i
+)
+=
+∑
+k∈E
+∫ t
+s
+dik(s,x)E
+(
+1{X(t) =j}dB(x)
+⏐⏐X(x) =k
+)
+,
+whereF s,x =σ(Xu :s≤u≤x). But
+E
+(
+1{X(t) =j}dB(x)
+⏐⏐X(x) =k
+)
+=b k(x)dx pkj(x,t) +
+∑
+ℓ∈E
+bkℓ(x)λ1
+kℓ(x)dx pℓj(x,t)
+so
+Vij(s,t) =
+∫ t
+s
+∑
+k∈E
+dik(s,x)bk(x)pkj(x,t)dx+
+∫ t
+s
+∑
+k,ℓ∈E
+dik(s,x)bkℓ(x)λ1
+kℓ(x)pℓj(x,t)dx
+=
+∫ t
+s
+∑
+k,ℓ∈E
+dik(s,x)δkℓbk(x)pℓj(x,t)dx+
+∫ t
+s
+∑
+k,ℓ∈E
+dik(s,x)bkℓ(x)λ1
+kℓ(x)pℓj(x,t)dx.
+In matrix form, this amounts to (41).□
+60 4. MULTI–STATE MARKOV MODELS WITH MARKOVIAN INTEREST RATES
+The actual computation of the reserves can be effectively executed using the following Van–
+Loan formula, which avoids integration.
+Corollary 4.6.VVV(s,t)can be extracted from the relation
+t∏
+s
+
+III+
+(
+ΛΛΛ(u)−∆∆∆(rrr(u))RRR(u)
+000 Λ ΛΛ(u)
+)
+du
+
+ =
+(
+DDD(s,t)V VV(s,t)
+000P PP(s,t)
+)
+.
+Remark 4.7:Consider the model where the interest rate Markov process and the biometric
+Markov process are independent. If the interest rate model corresponds to a phase–type
+distribution with initial distributionπππand subintensity matrix ΛΛΛ(u)−∆∆∆(rrr(u), then the
+classical state–wise reserve, given initiation in statei, is obtained by
+(eeei⊗πππ)VVV(0,T)eee.
+Finally, we state and prove Thiele’s differential equations for partial reserves with stochastic
+interest rates.
+Theorem 4.8(Thiele).
+∂
+∂sVVV(s,t) =−
+[
+ΛΛΛ(s)−∆∆∆(rrr(s))
+]
+VVV(s,t)−RRR(s)PPP(s,t),
+whereVVV(t,t) = 000. For the conventional state–wise prospective reserves,V VV th(t) =
+VVV(t,T)eee, this has the form
+∂
+∂tVVV th(t) = ∆∆∆(rrr(t))VVV th(t)−ΛΛΛ(t)VVV th(t)−RRR(t)eee,
+whereVVV th(T) = 000.
+Proof.Using that the product integral satisfies Kolmogorov’s forward and backward equa-
+tions, we get that
+
+
+∂
+∂sDDD(s,t) ∂
+∂sVVV(s,t)
+000 ∂
+∂sPPP(s,t)
+
+ = ∂
+∂s
+t∏
+s
+
+III+
+(
+ΛΛΛ(u)−∆∆∆(rrr(u))RRR(u)
+000 Λ ΛΛ(u)
+)
+du
+
+
+=−
+(
+ΛΛΛ(s)−∆∆∆(rrr(s))RRR(s)
+000 Λ ΛΛ(s)
+) (
+DDD(s,t)V VV(s,t)
+000P PP(s,t)
+)
+,
+from which Thiele’s differential equation can be pulled out from the upper right corner of
+each side of the equation.□
+Example 4.9(Relation to classical Thiele with stochastic interest rate):In the classical
+situation, there are possibilities for assigning probabilities to lump sums upon transitions.
+Either they are zero or one. Therefore there is no need for a split of ΛΛΛ(s) into ΛΛΛ 0 and ΛΛΛ 1(s).
+3. RESERVES UNDER MARKOVIAN INTEREST RATES 61
+Hence, we only consider ΛΛΛ(s) as a whole. There are no Poisson arrivals, sob ii(s) = 0 for all
+i.
+Here we consider
+VVV th(s) =VVV(s,T)eee.
+From ∂
+∂sVVV(s,t) =−
+[
+ΛΛΛ(s)−∆∆∆(rrr(s))
+]
+VVV(s,t)−RRR(s)PPP(s,t),
+we immediately get that
+∂
+∂sVVV th(s) =−
+[
+ΛΛΛ(s)−∆∆∆(rrr(s))
+]
+VVV th(s)−RRR(s)eee
+□
+Remark 4.10:We recall Remark 4.7. In case of independence between the Markovian
+interest rates and the biometric process, the state–wise differential equations above should
+be used with care. If one wishes to compute the state–wise reserves relative to the biometric
+states only (which is reasonable since the states of the underlying interest rate process have
+no interpretation), one should sum out dV i(s) with weights beingπi over all states in the
+state–space corresponding to the interest rate model.
+Example 4.11(Independence continued):We assume indpendence of the biometric and
+interest rate processes. Let the initial biometric state bei∈E b, the terminalj∈Eb, and
+assume that the initial distribution of the fitted interest rate phase–type distribution isπππ.
+Then
+Vij(0,T) = (eee′
+i⊗πππ)
+∫ T
+0
+
+
+x∏
+0
+(III+ (ΛΛΛb(u)⊕ΛΛΛr(u)−III⊗∆∆∆(rrr(u))du)
+
+ (
+RRR(x)⊗III
+)
+×
+
+
+T∏
+x
+(III+ ΛΛΛb(u)⊕ΛΛΛr(u)du)
+
+ dx(eeej⊗eee)
+This integral is then computed using Van Loan as follows.
+T∏
+0
+
+III+
+(
+ΛΛΛb(u)⊕ΛΛΛr(u)−III⊗∆∆∆(rrr(u))R RR(u)⊗III
+000 Λ ΛΛb(u)⊕ΛΛΛr(u)
+)
+ =
+(
+∗˜VVV(0,T)
+000∗
+)
+and
+Vij(0,T) = (eee′
+i⊗πππ)˜VVV(0,T)(eeej⊗eee).
+For a general timet<T,
+Vij(0,T) = (eee′
+i⊗πππt)
+∫ T
+t
+
+
+x∏
+t
+(III+ (ΛΛΛb(u)⊕ΛΛΛr(u)−III⊗∆∆∆(rrr(u))du)
+
+ (
+RRR(x)⊗III
+)
+62 4. MULTI–STATE MARKOV MODELS WITH MARKOVIAN INTEREST RATES
+×
+
+
+T∏
+x
+(III+ ΛΛΛb(u)⊕ΛΛΛr(u)du)
+
+ dx(eeej⊗eee)
+where
+πππt =πππPPPr(0,t)
+is the distribution ofX r(t). The Van Loan is then applied as above.
+4. Equivalence premium
+The arguments are essentially identical to the case of deterministic interest rates. It is
+assumed thatRRR(t) =RRR(t;θ) such thatθis a parameter of eitherBBB(t) and/or ∆∆∆(bbb(t)) only,
+and we writeVVV(t) =VVV(t;θ). Then
+VVV(t;θ) =
+∫ T
+t
+u∏
+t
+(
+III+ [ΛΛΛ(s)−∆∆∆(rrr(s))]ds
+)
+RRR(u;θ)
+T∏
+u
+(III+ ΛΛΛ(s)ds)du.
+If the interest rates satisfy ∆∆∆(rrr(s))≥000, then ΛΛΛ(s)−∆∆∆(rrr(s)) is a sub–intensity matrix, so
+that ∏u
+t (III+ [ΛΛΛ(s)−∆∆∆(rrr(s))]ds) is a sub–probability matrix, i.e.
+0≤
+u∏
+t
+(
+III+ [ΛΛΛ(s)−∆∆∆(rrr(s))]ds
+)
+eee≤eee.
+IfRRR(·;θ) is continuously differentiable and ΛΛΛ andrrrare continuous, then by Leibniz’ integral
+rule
+∂
+∂θVVV(t;θ) =
+∫ T
+t
+u∏
+t
+(
+III+ [ΛΛΛ(s)−∆∆∆(rrr(s))]ds
+)∂
+∂θRRR(u;θ)
+T∏
+u
+(III+ ΛΛΛ(s)ds)du.(42)
+Hence, we get from the Van Loan formula,
+T∏
+t
+
+III+
+
+
+ΛΛΛ(u)−∆∆∆(rrr(u)) ∂
+∂θRRR(u;θ)
+000 Λ ΛΛ(u)
+
+du
+
+ =
+
+
+DDD(t,T) ∂
+∂θVVV(t;θ)
+000P PP(t,T)
+
+.(43)
+If statei∈Eis the starting state, we can formulate the equivalence principle as the task of
+finding theθthat solves
+eee′
+iVVV(0;θ)eee= 0.
+This can, for example, be achieved by the use of Newton’s method,
+θn+1 =θn−eee′
+iVVV(0;θ)eee
+eee′
+iVVVθ(0;θ)eee,
+whereVVVθdenotes the partial derivative w.r.t.θ.
+In many cases,θis simply the premium rate in a certain state, in which case
+Rθ(t;θ) =∂
+∂θRRR(t;θ) =AAA(t),
+5. HIGHER ORDER MOMENTS WITH STOCHASTIC INTEREST RATES 63
+i.e. a matrix function not depending onθ. Then by (42),VVVθ(t;θ) =VVVθ(t) (partial derivatives
+w.r.t.θ) will not depend onθeither. But then the mapθ↦→eee′
+iVVV(t;θ)eeemust be linear (for
+fixedt), so that
+eee′
+iVVV(0;θ)eee=aθ+b,
+for some constantsa,b. Here
+b=e ee′
+iVVV(0;0)eee
+a=e ee′
+iVVVθ(0;0)eee.
+and the equivalence premium is hence given by
+θ=−b
+a =−eee′
+iVVV(0;0)eee
+eee′
+iVVVθ(0;0)eee.(44)
+5. Higher order moments with stochastic interest rates
+Consider the matrix of partial state-wise higher order moments of future payments, given
+by, fork∈N,
+VVV (k)(t,T) =
+{
+V (k)
+ij (t,T)
+}
+i,j∈E
+,
+V (k)
+ij (t,T) =E
+
+1{X(T) =j}
+(∫ T
+t
+e−
+∫x
+t rX(u)(u)du dB(x)
+)k
+⏐⏐⏐⏐⏐⏐⏐
+X(t) =i
+
+,
+and introduce what we shall term thereducedpartial state-wise higher order moments:
+VVV (k)
+r (t,T) = VVV (k)(t,T)
+k! .
+Denoting
+DDD(m)(s,t) =
+t∏
+s
+(III+
+[
+ΛΛΛ(u)−m∆∆∆(rrr(u))
+]
+du), m∈N,
+we then obtain the following theorem for partial reserves with a stochastic interest rate.
+Theorem 4.12.The matrix of reduced partial state-wise higher order moments satis-
+fies the integral equation, fork∈N0,
+VVV (k)
+r (t,T) =
+∫ T
+t
+DDD(k)(t,x)RRR(x)VVV (k−1)
+r (x,T)dx
++
+k∑
+m=2
+∫ T
+t
+DDD(k)(t,x)CCC(m)
+r (x)VVV (k−m)
+r (x,T)dx.
+Proof.Write
+(∫ T
+t
+e−
+∫x
+t rX(u)(u)du dB(x)
+)k
+64 4. MULTI–STATE MARKOV MODELS WITH MARKOVIAN INTEREST RATES
+=
+∫ T
+t
+···
+∫ T
+t
+e−
+∫x1
+t rX(u)(u)du···e−
+∫xk
+t rX(u)(u)du dB(xk)···dB(x1).(45)
+Now
+dB(t) =bX(t)(t)dt+
+∑
+j
+bX(t−)j(t)dNX(t−)j(t),
+and assume thats∈[t,T] is a point of increase for the counting processx→N ab(x) which
+triggers a lump sum payment. Then, in the computation of the above integral, there will be
+jump contributions at times, where any numberm∈{1,2,...,k}of the variablesx1,...,xk
+may be equal tos, sayx i1 =···xim =s. We can pickmout of thekvariables in
+(
+k
+m
+)
+= k!
+m!(k−m)!
+ways. Ifmvariables coincide at the jump times, then a contribution ofb ab(s)m is added.
+Hence only looking at jumpcoincidences, i.e.m≥2, the contribution to the integral (45) is
+k∑
+m=2
+(
+k
+m
+) ∫ T
+t
+e−m
+∫s
+t rX(u)(u)dubab(s)m
+×
+
+
+∫ T
+s
+···
+∫ T
+s
+e−
+∫xm+1
+t rX(u)(u)du···e−
+∫xk
+t rX(u)(u)du dA(xk)···dA(xm+1)
+
+ dNab(s).
+Indeed, since there are preciselymcoincidences, the remaining integrals must start from
+s+ =s; otherwise, the integration intervals would containsas well. Changing the lower
+limits of the integrals appearing in the exponentials, we can further rewrite the expression
+as
+k∑
+m=2
+(
+k
+m
+) ∫ T
+t
+e−k
+∫s
+t rX(u)(u)dubab(s)m
+×
+
+
+∫ T
+s
+···
+∫ T
+s
+e−
+∫xm+1
+s rX(u)(u)du···e−
+∫xk
+s rX(u)(u)du dA(xk)···dA(xm+1)
+
+ dNab(s).(46)
+Taking conditional expectationE(1{X(T) =j}·|X(t) =i) of (46), we get
+k∑
+m=2
+(
+k
+m
+) ∫ T
+t
+E
+(
+1{X(T) =j}e−k
+∫s
+t rX(u)(u)dubab(s)m
+×
+
+
+∫ T
+s
+···
+∫ T
+s
+e−
+∫xm+1
+s rX(u)(u)du···e−
+∫xk
+s rX(u)(u)du dA(xk)···dA(xm+1)
+
+ dNab(s)
+⏐⏐⏐⏐⏐X(t) =i
+)
+=
+k∑
+m=2
+(
+k
+m
+) ∫ T
+t
+E
+(
+1{X(T) =j}Y ZdNab(s)
+⏐⏐X(t) =i
+)
+,(47)
+5. HIGHER ORDER MOMENTS WITH STOCHASTIC INTEREST RATES 65
+whereY= e −k
+∫s
+t rX(u)(u)dubab(s)m and
+Z=
+∫ T
+s
+···
+∫ T
+s
+e−
+∫xm+1
+s rX(u)(u)du···e−
+∫xk
+s rX(u)(u)du dA(xk)···dA(xm+1).
+Further conditioning on a lump sum triggering event at times, caused by{X(s) =b,X(s−) =
+a}and the probability of which isλ1
+ab(s)ds, and using that 1{X(T) =j}Zand 1{X(s−) =
+a}Yare conditionally independent givenX(s) =b, (47) reduces to
+k∑
+m=2
+(
+k
+m
+) ∫ T
+t
+E
+
+1{X(T) =j}Z
+⏐⏐⏐⏐⏐X(s) =b
+
+E
+(
+1{X(s) =a}Y
+⏐⏐⏐⏐⏐X(t) =i
+)
+λ1
+ab(s)ds
+=
+k∑
+m=2
+(
+k
+m
+) ∫ T
+t
+D(k)
+ia (t,s)λ1
+ab(s)bab(s)mV (k−m)
+bj (s,T)ds.(48)
+Summing overaandb, and putting (48) on matrix form (ini,j) this amounts to
+k∑
+m=2
+(
+k
+m
+) ∫ T
+t
+DDD(k)(t,s)CCC(m)(s)VVV (k−m)(s,T)ds.(49)
+Now we consider the integral when there are no coincidences. To this end, we rewrite
+(∫ T
+t
+e−
+∫x
+t rX(u)(u)du dA(x)
+)k
+=k
+∫ T
+t
+e−
+∫x
+t rX(u)(u)du
+(∫ T
+x
+e−
+∫y
+t rX(u)(u)du dA(y)
+)k−1
+dA(x)
+=k
+∫ T
+t
+e−k
+∫x
+t rX(u)(u)du
+(∫ T
+x
+e−
+∫y
+x rX(u)(u)du dA(y)
+)k−1
+dA(x)
+Then
+V (k)
+ij (t,T) =E
+
+1{X(T) =j}
+(∫ T
+t
+e−
+∫x
+t rX(u)(u)du dA(x)
+)k
+⏐⏐⏐⏐⏐⏐⏐
+X(t) =i
+
+
+=k
+∫ T
+t
+E
+
+1{X(T) =j}e−k
+∫x
+t rX(u)(u)du
+(∫ T
+x
+e−
+∫y
+x rX(u)(u)du dA(y)
+)k−1
+dA(x)
+⏐⏐⏐⏐⏐⏐⏐
+X(t) =i
+
+
+=k
+∑
+ℓ
+∫ T
+t
+E
+(
+1{X(x) =ℓ}e−k
+∫x
+t rX(u)(u)du1{X(T) =j}
+×E
+(
+1{X(T) =j}
+(∫ T
+x
+e−
+∫y
+x rX(u)(u)du dA(y)
+)k−1
+dA(x)
+⏐⏐⏐⏐⏐X(x) =ℓ
+)⏐⏐⏐⏐⏐X(t) =i
+)
+.(50)
+On the event thatX(x) =ℓ, the contribution to the expectation of the above integral (50),
+where no coincidences are allowed (i.e., the reward at timexfrom at most one jump and
+benefit rates), amounts to
+E
+(
+1{X(T) =j}
+(∫ T
+x
+e−
+∫y
+x rX(u)(u)du dA(y)
+)k−1⏐⏐⏐⏐⏐X(x) =ℓ
+)
+bℓ(x)dx
+66 4. MULTI–STATE MARKOV MODELS WITH MARKOVIAN INTEREST RATES
++
+∑
+m
+E
+(
+1{X(T) =j}
+(∫ T
+x
+e−
+∫y
+x rX(u)(u)du dA(y)
+)k−1⏐⏐⏐⏐⏐X(x) =m
+)
+λ1
+ℓm(x)bℓm(x)dx
+=b ℓ(x)V (k−1)
+ℓj (x,T)dx+
+∑
+m
+λ1
+ℓm(x)bℓm(x)V (k−1)
+mj (x,T)dx,
+and the integral (50) then equals
+k
+∑
+ℓ
+∫ T
+t
+E
+(
+1{X(x) =ℓ}e−k
+∫x
+t rX(u)(u)du
+⏐⏐⏐⏐⏐X(t) =i
+)
+×
+(
+bℓ(x)V (k−1)
+ℓj (x,T) +
+∑
+m
+λ1
+ℓm(x)bℓm(x)V (k−1)
+mj (x,T)
+)
+dx
+which in matrix form amounts to
+k
+∫ T
+t
+DDD(k)(t,x)RRR(x)VVV (k−1)(x,T)dx.(51)
+Adding (49) and (51) then prove the result.□
+Defining
+FFF (k)
+U (x) =
+
+
+ΛΛΛ(x)−k∆∆∆(rrr(x))R RR(x)C CC(2)
+r (x)···CCC(k−1)
+r (x)C CC(k)
+r (x)
+000 Λ ΛΛ(x)−(k−1)∆∆∆(rrr(x))RRR(x)···CCC(k−2)
+r (x)C CC(k−1)
+r (x)
+... ... ... ......... ... ...
+000 0 00 0 00···ΛΛΛ(x)−∆∆∆(rrr(x))R RR(x)
+000 0 00 0 00···000 Λ ΛΛ(x)
+
+
+we get by Van Loan that
+T∏
+t
+(III+FFF (k)
+U (x)dx) =
+
+
+∗ ∗ ∗ ∗ ··· ∗VVV (k)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗VVV (k−1)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗VVV (k−2)
+r (t)
+... ... ... ... ......... ... ...
+∗ ∗ ∗ ∗ ··· ∗VVV (1)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗PPP(t,T)
+
+
+.(52)
+5. HIGHER ORDER MOMENTS WITH STOCHASTIC INTEREST RATES 67
+From these results, we can derive a number of classical results. Differentiation of (52) gives
+
+
+∗ ∗ ∗ ∗ ··· ∗∂
+∂tVVV (k)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗∂
+∂tVVV (k−1)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗∂
+∂tVVV (k−2)
+r (t)
+... ... ... ... ......... ... ...
+∗ ∗ ∗ ∗ ··· ∗∂
+∂tVVV (1)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗∂
+∂tPPP(t,T)
+
+
+=−FFF (k)
+U (t)
+T∏
+t
+(III+FFF (k)
+U (x) dx)
+=−
+
+
+ΛΛΛ(t)−k∆∆∆(rrr(t))R RR(t)C CC(2)
+r (t)···CCC(k−1)
+r (t)C CC(k)
+r (t)
+000 Λ ΛΛ(t)−(k−1)∆∆∆(rrr(t))R RR(t)···CCC(k−2)
+r (t)C CC(k−1)
+r (t)
+... ... ... ......... ... ...
+000 0 00 0 00···ΛΛΛ(t)−∆∆∆(rrr(t))R RR(t)
+000 0 00 0 00···0 00 Λ ΛΛ(t)
+
+
+×
+
+
+∗ ∗ ∗ ∗ ··· ∗VVV (k)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗VVV (k−1)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗VVV (k−2)
+r (t)
+... ... ... ... ......... ... ...
+∗ ∗ ∗ ∗ ··· ∗VVV (1)
+r (t)
+∗ ∗ ∗ ∗ ··· ∗PPP(t,T)
+
+
+We then obtain the following version of Hattendorff’s differential equation by only considering
+the first row times the last column.
+Theorem 4.13.The matrix of reduced partial state-wise higher order moments satis-
+fies the system of differential equations, fork∈N0,
+∂
+∂sVVV (k)
+r (t) =
+(
+k∆∆∆(rrr(u))−ΛΛΛ(t)
+)
+VVV (k)
+r (t)−RRR(t)VVV (k−1)
+r (t)−
+k∑
+i=2
+CCC(i)
+r (t)VVV (k−i)
+r (t),
+with terminal conditionVVV (k)
+r (T) = 1(k=0)III.
+Let
+CCC(s,t) =
+t∏
+s
+(III+AAA(x)dx)⊗III.
+The Kronecker product between ap 1×q1 matrixAAA={aij}and ap2×q2 matrixBBB={bij}
+is defined as thep 1p2×q1q2 matrix
+AAA⊗BBB={aijBBB}i=1,...,p1,j=1,...,q1 ={aijbkℓ}.
+Using that (AAA⊗BBB)(CCC⊗DDD) = (AAACCC)⊗(BBBDDD), we get
+∂
+∂tCCC(s,t) =
+t∏
+s
+(III+AAA(x)dx)AAA(t)⊗III
+68 4. MULTI–STATE MARKOV MODELS WITH MARKOVIAN INTEREST RATES
+=
+
+
+t∏
+s
+(III+AAA(x)dx)⊗III
+
+ (
+AAA(t)⊗III
+)
+=CCC(s,t)
+(
+AAA(t)⊗III
+)
+,
+and we conclude that
+CCC(s,t) =
+t∏
+s
+(III+ (AAA(x)⊗III)dx).(53)
+A similar argument gives that
+III⊗
+t∏
+s
+(III+AAA(x)dx) =
+t∏
+s
+(III+ (III⊗AAA(x))dx).(54)
+Finally, ifAAA(t) andBBB(t) are Riemann integrable matrix functions of dimensionsq×qand
+p×prespectively, then
+t∏
+s
+(III+ (AAA(x)⊕BBB(x))dx) =
+t∏
+s
+(III+AAA(x)dx)⊗
+t∏
+s
+(III+BBB(x)dx),(55)
+where⊕denotes the Kronecker sum, defined byAAA(t)⊕BBB(t) =AAA⊗III+III⊗BBB(t), and where
+the firstIIIhas the dimension ofB BB(t) and the secondI IIhas the dimension ofA AA(t). To see
+this, we notice thatAAA(t)⊗IIIandI II⊗BBB(t) commute, so
+t∏
+s
+(III+ (AAA(x)⊕BBB(x))dx) =
+t∏
+s
+(III+ (AAA(x)⊗III)dx)
+t∏
+s
+(III+ (III⊗BBB(x))dx)
+=
+
+
+t∏
+s
+(III+AAA(x)dx)⊗III
+
+
+
+III⊗
+t∏
+s
+(III+BBB(x)dx)
+
+
+=
+t∏
+s
+(III+AAA(x)dx)⊗
+t∏
+s
+(III+BBB(x)dx).
+Example 4.14(Independence continued):We can continue our decompositions from the
+independence case of Example 4.2 to reserves and higher-order moments. Indeed, since
+ΛΛΛb(u)⊕ΛΛΛr(u)−k∆∆∆(eee⊗rrr(u)) = Λ ΛΛb(u)⊗III+III⊗(ΛΛΛr(u)−k∆∆∆(rrr(u)))
+= ΛΛΛb(u)⊕(ΛΛΛr(u)−k∆∆∆(rrr(u)),
+we get
+t∏
+s
+(
+III+
+(
+ΛΛΛb(u)⊕ΛΛΛr(u)−k∆∆∆(eee⊗rrr(u))du
+))
+=
+t∏
+s
+(III+ ΛΛΛb(u)du)⊗
+t∏
+s
+(III+ (ΛΛΛr(u)−k∆∆∆(rrr(u))du)
+=
+t∏
+s
+(III+ ΛΛΛb(u)du)⊗DDD(k)(s,t)
+Thus, each diagonal block element can be computed using these representations when setting
+up the matrixFFFU to compute these higher–order moments.
+□
+CHAPTER 5
+Semi–Markov models
+1. Basic properties
+Let{Z(t)}t≥0denote a stochastic process taking values inE={1,2,...,p}. Then the sample
+pathst→Z(t) are piecewise constant. The time the process spends in each state before
+jumping to another is called a sojourn time. The duration process{U(t)}t≥0related to
+{Z(t)}t≥0is defined by
+U(t) = inf{u≥0:Z((t−u)−)̸=Z(t)},
+i.e. the time eleapsed since the last jump into the current state, which equals the value of
+Z(t), or the time since initiation, which equalst, if there has been no previous jump.
+Definition 5.1:{Z(t)}t≥0is said to be a semi–Markov process if{(Z(t),U(t))}t≥0is
+a Markov process.
+The state–space for{(Z(t),U(t))}t≥0isE×R+, and the Markov property then amounts to
+P(Z(t) =j,U(t)≤v|Fs) =P(Z(t) =j,U(t)≤v|Z(s),U(s)),
+whereF s =σ((Z(x),U(x)):x∈[0,s]).
+For a semi–Markov process we define transition probabilities as
+Pij(s,t,u,v) =P(Z(t) =j,U(t)≤v|Z(s) =i,U(s) =u),(56)
+and we will assume the existence of the corresponding (defective) transition densities
+pij(s,t,u,v) = ∂
+∂vPij(s,t,u,v)
+which has the probabilistic interpretation
+pik(s,t,u,v)dv=P(Z(t) =k,U(t)∈(v,v+ dv]|Z(s) =i,U(s) =u).
+We form transition probability and transition density matrices
+PPP(s,t,u,v) ={P ij(s,t,u,v)}i,j=1,...,p.(57)
+ppp(s,t,u,v) ={p ij(s,t,u,v)}i,j=1,...,p (58)
+Fori̸=k, we assume the existence of the limits
+µik(t,u) = lim
+h↓0
+P(Z(t+h) =k|Z(t) =i,U(t) =u)
+h
+69
+70 5. SEMI–MARKOV MODELS
+= lim
+h↓0
+Pik(t,t+h,u,+∞)
+h
+= ∂
+∂tPik(s,t,u,+∞)
+⏐⏐⏐⏐⏐t=s
+.
+The interpreation ofµik(t,u) is similar to the Markov case as
+µik(t,u)dt=P(Z(t+ dt) =k|Z(t) =i,U(t) =u),
+i.e. the probability of jumping fromitojat timet(and with durationu). Here, the target
+duration just after the jump is irrelevant since it will be zero.
+Let
+µii(t,u) =−µi(t,u) =−
+∑
+k̸=i
+µik(t,u).
+and define the intensity matrices
+MMM(t,u) ={µij(t,u)}i,j∈E.
+We assume, unless otherwise stated, that (t,u)→MMM(t,u) is continuous, which simply means
+that each of it elements is a continuous function in (t,u).
+Definition 5.2:For a matrixAAA={aij}i,j=1,..,pwe let ∆AAAdenote the diagonal matrix
+whose diagonal is that ofAAA, and∇AAA=AAA−∆AAAthe remaining part ofAAA.
+Then we have that
+Theorem 5.3.
+PPP(s,t,u,v) =
+∫ t
+s
+e
+∫w
+s ∆MMM(y,u+y−s)dy∇MMM(w,u+w−s)PPP(w,t,0,v)dw
++ e
+∫t
+s ∆MMM(y,u+y−s)dy1{u+t−s≤v}.(59)
+Proof.ConsiderP ij(s,t,u,v). If there are no jumps during [s,t], which happens with prob-
+ability
+e−
+∫t
+sµi(x,u+x−s)dx,
+then the final state will beiand the duration will beu+t−s. Hence, the contribution from
+this case will be
+e−
+∫t
+sµi(x,u+x−s)dxδij1{u+t−s≤v}.
+Hereδij denotes the Kronecker–δ, which is one fori=jand zero otherwise.
+On the complementary event, that there is at least one jump during [s,t], we condition on
+the first jump at timew, and that is jumps to statek. The density of this is
+e−
+∫w
+s µi(x,u+x−s)dxµik(w,u+w−s).
+After jumping tokat timew, the duration is reset to zero, and the remaining probability of
+being in statejat timetand with a duration that is less thanvthen amounts toP kj(w,t,0,v).
+1. BASIC PROPERTIES 71
+Integrating up and putting it in matrix form yields the result.□
+OncePPP(w,t,0,v) is known,P PP(s,t,u,v) can then be obtained by integration in (60).
+In order to findPPP(w,t,0,v), we see that it satisfies the equation (setu= 0 in (60))
+PPP(s,t,0,v) =
+∫ t
+s
+e
+∫w
+s ∆MMM(y,y−s)dy∇MMM(w,w−s)PPP(w,t,0,v)dw
++ e
+∫t
+s ∆MMM(y,y−s)dy1{t−s≤v}.(60)
+Define
+PPP (0)(s,t,0,v) = e
+∫t
+s ∆MMM(y,y−s)dy1{t−s≤v},
+PPP (n+1)(s,t,0,v) =
+∫ t
+s
+e
+∫w
+s ∆MMM(y,y−s)dy∇MMM(w,w−s)PPP (n)(w,t,0,v)dw
+ThenPPP (0)(s,t,0,v) is the (defective, due toU(t)≤v) transition probability matrix for the
+case of no jumps. Similarly,P PP (n)(s,t,0,v) is the defective transition probaility matrix for
+the case of exactlyntransitions. Thus we can obtainP PP(s,t,0,v) from
+PPP(s,t,0,v) =
+∞∑
+n=0
+PPP (n)(s,t,0,v).
+Define
+QQQ(s,t) = e
+∫t
+s ∆MMM(y,y−s)dy∇MMM(t,t−s), QQQ(s,t) ={qij(s,t)}i,j∈E.(61)
+Thenq ij(s,t) is the defective density function of a sojourn time in a semi–Markov process
+that enters stateiat timesand terminates at timetby a jump to statej, Thus ∑
+jqij(s,t) is
+the (non–defective) density for the sojourn time in a semi–Markov process that enters state
+iat timesand lasts until timet.
+With this notation,
+PPP(s,t,0,v) =
+∫ t
+s
+QQQ(s,w)PPP(w,t,0,v)dw+ e
+∫t
+s ∆MMM(y,y−s)dy1{t−s≤v}.(62)
+Assuming differentiability ofv→PPP(s,t,0,v), by definition we obtainp pp(s,t,0,v) as its deriv-
+ative w.r.t.v. There is an issue, however, which is the indicator functionv→1{t−s≤v}
+which is not differentiable w.r.t.vin the classical sense. The derivation of the indicator
+function formally falls into the field of distributions, also known as generalised functions.
+Without diving further into this theory, the derivativex→1{x≥y}will be defined as a
+(generalised) functionδy(x) which satisfies
+∫ x
+−∞
+δy(u)du= 1{x≥y}.
+This function is referred to as the Dirac–δfunction.
+Remark 5.4:We briefly comment on the Dirac–δfunction,δy, and its construction. The
+function used throughout in the notes isδ0, which usesy= 0. In general,δ y(x) =δ0(x−y).
+72 5. SEMI–MARKOV MODELS
+LetX σ∼N(y,σ2). ThenX σhas density
+fXσ(x) = 1√
+2πσe−(x−y)2/2σ2
+and with meanE(X σ) =yand varianceE((X σ−y)2) =σ2.
+Then for anyσ ∫∞
+−∞
+fXσ(x)dx= 1.
+We formally define a symbol (think of it as a function),δy(x), such that
+∫∞
+−∞
+δy(x)dx= lim
+σ→0
+∫∞
+−∞
+fXσ(x)dx= 1.
+We think ofδy(x) as the limit off Xσ(x) asσ→0.
+By Markov’s inequality,
+P
+(
+|Xσ−y|>a
+)
+≤E((Xσ−y)2)
+a2 = σ2
+a2→0
+asσ→0. HenceXσ→yin probability asσ→0. Since the limit,y, is degenerated (constant),
+thenXσalso converges toyin distribution. Hence, for any bounded and continuous function,
+f, we have that
+E(f(Xσ))→E(f(y)) =f(y).
+But then ∫∞
+−∞
+f(x)δy(x)dx=f(y),
+which is a key property ofδy(x).
+This property then implies that
+∫ v
+−∞
+δ0(x−y)dx=
+∫∞
+−∞
+1(−∞,v](x)δ0(x−y)dx
+=
+∫∞
+−∞
+1(−∞,v](x)δy(x)dx
+= 1(−∞,v](y)
+= 1{y≤v}
+as it should. □
+After this small intermezzo, we may now, with a clear conscience, differentiate through in
+(60) and (62) to get
+ppp(s,t,u,v) =
+∫ t
+s
+e
+∫w
+s ∆MMM(y,u+y−s)dy∇MMM(w,u+w−s)ppp(w,t,0,v)dw
++ e
+∫t
+s ∆MMM(y,u+y−s)dyδu+t−s(v) (63)
+ppp(s,t,0,v) =
+∫ t
+s
+QQQ(s,w)ppp(w,t,0,v)dw+ e
+∫t
+s ∆MMM(y,y−s)dyδ0(v−(t−s)).(64)
+1. BASIC PROPERTIES 73
+Remark 5.5:The inclusion of a Dirac–δfunction in an expression for a density function
+happens frequently, for example, if the distribution of a random variableX, say, consists of
+an absolutely continuous part, and an atom at some point. To be precise, we let
+X=
+{
+Zw.p. 1−p
+aw.p.p ,
+whereais a constant andZand absolute continuous random variable. Hence,Xtakes the
+constant valueawith probabilitypand, with probability 1−p, takes the value of a random
+variableZwith a (defective) density function.
+Letf Z denote the density function forZand letf X be the density function forX. The
+latter cannot be expressed in the usual way due to the atom ata. But we can write
+fX(x) = (1−p)fZ(x) +pδa(x).
+Indeed, this expression implies that for their corresponding c.d.f. (cumulative distribution
+function)
+FX(x) = (1−p)FZ(x) +p
+∫ x
+∞
+δa(u)du= (1−p)FZ(x) +p1(−∞,x](a),
+where
+1(−∞,x](a) = 1{x≥a}
+is exactly the c.d.f. of a point mass ata.
+Therefore, in (63), there are a point masses of sizes (matrix)
+e
+∫t
+s ∆MMM(y,y−s)dy
+att−s, which occurs if there are no jumps.
+Now let us consider (63) a little more closely. We can obtain an expression for the (defective)
+density functionppp(s,t,0,v) in the following way. IfU(t) =vshould hold true, then there
+must be a transition exactly at timet−vand no further transition during [t−v,t]. Also,
+v∈[0,t−s], otherwise the probability will be zero.
+Letp (n)
+ij (s,t,0,v) denote the defective probability density of transition from (Z(s) =i,U(s) =
+0) to (Z(t) =j,U(t) =v) using exactlyntransitions,n≥0.
+Forn= 0, we clearly have
+ppp(0)(s,t,0,v) = e
+∫t
+s ∆MMM(y,y−s)dyδ0(v−(t−s)).
+Forn= 1, the only transition must be at timet−v, so that
+ppp(1)(s,t,0,v) = e
+∫t−v
+s ∆MMM(y,y−s)dy∇MMM(t−v,t−v−s)e
+∫t
+t−v ∆MMM(y,y−(t−v))dy
+=QQQ(s,t−v)e
+∫t
+t−v ∆MMM(y,y−(t−v))dy.
+74 5. SEMI–MARKOV MODELS
+Forn>1, we must have a transition exactly att−vand anothern−1 previous to this one.
+Conditioning out on the latter, we get
+ppp(n)(s,t,0,v)
+=
+∫ t−v
+s
+∫ t−v
+w1
+···
+∫ t−v
+wn−2
+QQQ(s,w 1)QQQ(w1,w 2)···QQQ(wn−1,t−v)dwn−1···dw1 e
+∫t
+t−v ∆MMM(y,y−(t−v))dy.
+Rewrite
+ppp(0)(s,t,0,v) = e
+∫t
+s ∆MMM(y,y−(t−v))dyδ0(s−(t−v))
+= e
+∫t
+t−v ∆MMM(y,y−(t−v))dyδ0(s−(t−v)).
+Then define a nonhomogeneous convolution operator∗by
+(QQQ1∗QQQ2)(s,t) =
+∫ t
+s
+QQQ1(s,u)QQQ2(u,t)du
+and let
+QQQ∗0(s,t) =δ0(t−s)
+QQQ∗1(s,t) =QQQ(s,t)
+QQQ∗(n+1)(s,t) =
+(
+QQQ∗n∗QQQ
+)
+(s,t).
+Then
+ppp(s,t,0,v) =
+∞∑
+n=0
+ppp(n)(s,t,0,v)
+=
+
+
+∞∑
+n=0
+QQQ∗n(s,t−v)
+
+ e
+∫t
+t−v ∆MMM(y,y−(t−v))dy.
+Define
+uuu(s,t) =
+∞∑
+n=0
+QQQ∗n(s,t), uuu(s,t) ={uij(s,t)}i,j∈E.
+Then
+uij(s,t) = probability of a jump to statejin [t,t+ dt) givenZ(s) =i,Z(s−)̸=i..
+This is a so–called time–inhomogeneous Markov renewal density. We shall not delve into the
+theory of Markov renewal processes, but just mention that it exists and is a well–developed
+and extensive theory in the time–homogeneous case. The theory is less developed in the
+inhomogeneous setting.
+For a general initial duration,u, we proceed as follows. Forn= 0, we clearly have
+ppp(0)(s,t,u,v) = e
+∫t
+s ∆MMM(y,u+y−s)dyδ0(v−(u+t−s)).
+Forn= 1, the only transition must be at timet−v, so that
+ppp(1)(s,t,u,v) = e
+∫t−v
+s ∆MMM(y,u+y−s)dy∇MMM(t−v,u+t−v−s)e
+∫t
+t−v ∆MMM(y,y−(t−v))dy
+2. DELAYED PARTIAL DIFFERENTIAL EQUATIONS FOR THE TRANSITIONS 75
+=QQQ(s,u,t−v)e
+∫t
+t−v ∆MMM(y,y−(t−v))dy,
+where
+QQQ(s,u,t) = e
+∫t
+s ∆MMM(y,u+y−s)dy∇MMM(t,u+t−s)
+are the defective densities for transitions at timetgiven initial duration ofuat times.
+Forn>1, we get as for the case ofu= 0 that
+ppp(n)(s,t,u,v)
+=
+∫ t−v
+s
+∫ t−v
+w1
+···
+∫ t−v
+wn−2
+QQQ(s,u,w 1)QQQ(w1,w 2)···QQQ(wn−1,t−v)dwn−1···dw1 e
+∫t
+t−v ∆MMM(y,y−(t−v))dy.
+Then we obtain what could be named a delayed time–inhomogeuous Markov renewal density,
+uuu(s,u,t), by
+uuu(s,u,t) =QQQ(s,u,t)∗uuu(s,t),
+and
+ppp(s,t,u,v) =
+∞∑
+n=0
+ppp(n)(s,t,u,v)
+=δ0(v−(u+t−s))e
+∫t
+s ∆MMM(y,u+y−s)dy+uuu(s,u,t−v)e
+∫t
+t−v ∆MMM(y,y−(t−v))dy.
+This equation implies immediately that
+(
+∂
+∂t+ ∂
+∂v
+)
+ppp(s,t,u,v) =ppp(s,t,u,v)∆MMM(t,v).
+Regarding the initial condtion, consider
+uuu(s,u,t) =QQQ(s,t,u)∗uuu(s,t)
+=
+∫ t
+s
+QQQ(s,u,w)uuu(w,t)dw
+→∇MMM(s,u)
+ass→tdue to the termδ0(t−w) inuuu(w,t). Thus 1
+ppp(s,s,u,v) =δ0(v−u)III+∇MMM(s,u)δ0(v).
+2. Delayed partial differential equations for the transitions
+In this section, we derived what corresponds to the Kolmogorov backward differential equa-
+tions for the transition probabilities and densities.
+We start withPPP(s,t,u,v).
+1check carefully, in particular the Dirac delta
+76 5. SEMI–MARKOV MODELS
+Theorem 5.6.
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+PPP(s,t,u,v) = ∆MMM(s,u)PPP(s,t,u,v) +∇MMM(s,u)PPP(s,t,0,v)
+with boundary conditionPPP(t,t,u,v) =III1{v≥u}.
+Proof.From (60) we have that
+PPP(s,t,u,v) =
+∫ t
+s
+e
+∫w
+s ∆MMM(y,u+y−s)dy∇MMM(w,u+w−s)PPP(w,t,0,v)dw
++ e
+∫t
+s ∆MMM(y,u+y−s)dy1{u+t−s≤v}.
+Due to the different signs ofsandu, we first notice that
+(
+∂
+∂s+ ∂
+∂u
+)
+1{u+t−s≤v}= 000,
+(
+∂
+∂s+ ∂
+∂u
+)
+∇MMM(w,u+w−s) = 000,
+(
+∂
+∂s+ ∂
+∂u
+)
+∆MMM(w,u+w−s) = 000,
+so that(
+∂
+∂s+ ∂
+∂u
+)
+e
+∫w
+s ∆MMM(y,u+y−s)dy= e
+∫w
+s ∆MMM(y,u+y−s)dy
+(
+∂
+∂s+ ∂
+∂u
+) ∫ w
+s
+∆MMM(y,u+y−s)dy
+= e
+∫w
+s ∆MMM(y,u+y−s)dy
+(∫ w
+s
+∂
+∂s∆MMM(y,u+y−s)dy−∆MMM(s,u) +
+∫ w
+s
+∂
+∂u∆MMM(y,u+y−s)dy
+)
+=−∆MMM(s,u)e
+∫w
+s ∆MMM(y,u+y−s)dy.
+Then we get using Leibniz’s rule for integrals, which only applies to the ∂
+∂spart,
+(
+∂
+∂s+ ∂
+∂u
+)
+PPP(s,t,u,v)
+=
+∫ t
+s
+(
+∂
+∂s+ ∂
+∂u
+) (
+e
+∫w
+s ∆MMM(y,u+y−s)dy∇MMM(w,u+w−s)PPP(w,t,0,v)
+)
+dw
+−∇MMM(s,u)PPP(s,t,0,v)
++
+(
+∂
+∂s+ ∂
+∂u
+) (
+e
+∫t
+s ∆MMM(y,u+y−s)dy1{u+t−s≤v}
+)
+=−∆MMM(s,u)PPP(s,t,u,v)−∇MMM(s,u)PPP(s,t,0,v).
+The initial condition amounts toPPP(t,t,u,v) =III1{v≥u}follows directly from (60).□
+Differentiating through withvon both sides gives us the PDE for densities:
+3. THE LIFE–INSURANCE MODEL 77
+Theorem 5.7.(
+∂
+∂s+ ∂
+∂u
+)
+ppp(s,t,u,v) =−∆MMM(s,u)ppp(s,t,u,v)−∇MMM(s,u)ppp(s,t,0,v)
+with boundary conditionppp(t,t,u,v) =IIIδ0(v−u).
+So we see that the PDEs are the same, but with different boundary conditions.
+3. The life–insurance model
+We consider a life insurance contract, stipulating that the insured can be in one ofpdifferent
+(biometric) states at any time. This could, for example, be a simple “alive–death model (p=
+2), “active–disabled–death” model or “active–disabled–lapsing–death” withp= 2. There,
+the original “alive”–state has been refined into subconditions, which are of importance for
+differentiating between payments.
+The state of the insured is assumed to follow a semi–Markov process{Z(t)}t≥0with state–
+spaceE={1,2,...,p}and duration process{U(t)}u≥0. LetMMM(t,u) ={µij(t,u)}i,j∈Edenote
+its intensity matrix.
+Given thatZ(t) =i,U(t) =u, there is a continuous benefit payment with rateb i(t,u) during
+sojourns. Negative values are premium rates. We assume the matrix is split into
+MMM(t,u) =MMM0(t,u) +MMM1(t,u),
+with corresponding intensitiesMMM0(t,u) ={µ0
+ij(t,u)}i,j∈EandMMM1(t,u) ={µ1
+ij(t,u)}i,j∈E.
+With intensityµ0
+ij(t,u),i̸=j, there is a transition fromitojwhich does not result in
+a lump sum payment, whileµ1
+ij(t,u) denotes the contrary, i.e. the intensity for a transition
+triggering a (deterministic) lump sum payment of sizeb ij(t,u), say. Furthermore, at a rate
+ofµ1
+ii(t,u), there will be a lump sum payment of sizeb ii(t,u) during sojourns. In this case,
+∆MMM0(s,u) = ∆MMM(s,u)−∆∆∆(µµµ1(s,u)),
+whereµµµ1(s,u) = (µ1
+11(s,u),...,µ1
+pp(s,u)).
+We arrange the lumpsum payments into a matrixBBB(t,u) ={bij(t,u)}i,j∈E.
+In many cases, we may letMMM0(t,u) = ∆MMM(t,u) andMMM0(t,u) =∇MMM(t,u) by lettingb ij(t,u) =
+0 in appropriate places. If there is ani̸=jsuch that bothµ 0
+ij(t,u)>0 andµ 1
+ij(t,u)>0,
+then the probability of a lump sum payment upon a transition fromitojequals
+qij(t,u) = µ1
+ij(t,u)
+µ0
+ij(t,u) +µ1
+ij(t,u).
+Such a mechanism could be present in practice if, for example, disability lump-sum compen-
+sation depends on where and how the accident occurred.
+78 5. SEMI–MARKOV MODELS
+Remark 5.8:The lump sum payments during the sojourn can be used to control a variety
+of additional features. We can even use it to specify lump sum payments at a deterministic
+timeS(for example at termination) by lettingµ 1
+ii(t,u) =δ0(S−t) (with the convention that
++∞·0 = 0).
+LetN jk(t) denote the counting process that counts the number of lump sum paying transi-
+tions (or lump sum during sojourn ifj=k), and define the payment process by
+dB(t) =
+∑
+j
+1{Z(t) =j}
+
+bj(t,U(t)) +
+∑
+k
+bjk(t,U(t−))dNjk(t)
+
+.
+The undiscounted partial reward densities are then defined as
+v0
+ij(s,t,u,v) =E
+(
+1{Z(t) =j,U(t)∈(v,v+ dv)}
+∫ t
+s
+dB(x)
+⏐⏐⏐⏐⏐Z(s) =i,U(s) =u
+
+.
+Letvvv0(s,t,u,v) ={v0
+ij(s,t,u,v)}. The superscript zero indicates that the reserve is not
+discounted by an interest rate.
+The rewards are organised in
+RRR(s,u) =RRR0(s,u) +RRR1(s,u),
+where
+RRR0(s,u) = ∆∆∆(bbb(s,u)) + ∆MMM1(s,u)•BBB(s,u)
+RRR1(s,u) =∇MMM1(s,u)•BBB(s,u).
+The elements of the diagonal ofMMM1(s,u) correspond to the arrival of lump sum payments
+during a sojourn, and hence the duration will not reset for these events.
+Then
+Theorem 5.9.
+vvv0(s,t,u,v) =
+∫ t
+s
+∫ u+x−s
+0
+ppp(s,x,u,w)RRR0(x,w)ppp(x,t,w,v)dwdx
++
+∫ t
+s
+∫ u+x−s
+0
+ppp(s,x,u,w)RRR1(x,w)ppp(x,t,0,v)dwdx.(65)
+Proof.
+v0
+ij(s,t,u,v) =E
+(
+1{Z(t) =j,U(t)∈(v,v+ dv)}
+∫ t
+s
+dB(x)
+⏐⏐⏐⏐⏐Z(s) =i,U(s) =u
+
+
+=
+∫ t
+s
+E
+(
+1{Z(t) =j,U(t)∈(v,v+ dv)}dB(x)
+⏐⏐Z(s) =i,U(s) =u
+)
+3. THE LIFE–INSURANCE MODEL 79
+For a timex∈[s,t],Z(x)∈EandU(x)∈[0,u+ (x−s)], so by the Markov property of
+(Z(t),U(t)), we get
+v0
+ij(s,t,u,v) =
+∑
+k
+∫ t
+s
+∫ u+x−s
+0
+E(1{Z(t) =j,U(t)∈(v,v+ dv)}×
+1{Z(x) =k,U(x)∈(w,w+ dw)}dB(x)|Z(s) =i,U(s) =u)dw
+=
+∑
+k
+∫ t
+s
+∫ u+x−s
+0
+E(1{Z(t) =j,U(t)∈(v,v+ dv)}dB(x)|Z(x) =k,U(x) =w)×
+E(1{Z(x) =k,U(x)∈(w,w+ dw)}|Z(s) =i,U(s) =u)dw.
+First we notice that
+E(1{Z(x) =k,U(x)∈(w,w+ dw)}|Z(s) =i,U(s) =u) =pik(s,x,u,w).
+Secondly,
+E(1{Z(t) =j,U(t)∈(v,v+ dv)}dB(x)|Z(x) =k,U(x) =w)
+=bk(x,w)dx pkj(x,t,w,v) +
+∑
+ℓ̸=k
+µ1
+kℓ(x,w)dx bkℓ(x,w)pℓj(x,t,0,v)
++µ1
+kk(x,w)dx bkk(x,w)pℓj(x,t,w,v)
+= (bk(x,w) +µ1
+kk(w,w)bkk(x,w))dxpℓj(x,t,w,v) +
+∑
+ℓ̸=k
+µ1
+kℓ(x,w)dx bkℓ(x,w)pℓj(x,t,0,v)
+=RRR0
+kk(x,w)dx pkj(x,t,w,v) +
+∑
+ℓ̸=k
+RRR1
+kℓ(x,w)dx pℓj(x,t,0,v)
+=RRR0
+kk(x,w)dx pkj(x,t,w,v) +
+∑
+ℓ
+RRR1
+kℓ(x,w)dx pℓj(x,t,0,v),
+since the diagonal elements ofRRR1(x,w) are zero.
+Then we obtain
+v0
+ij(s,t,u,v) =
+∑
+k
+∫ t
+s
+∫ u+x−s
+0
+pik(s,x,u,w)RRR0
+kk(x,w)pkj(x,t,w,v)dxdw
++
+∑
+k,ℓ
+∫ t
+s
+∫ u+x−s
+0
+pik(s,x,u,w)RRR1
+kℓ(x,w)dxpℓj(x,t,0,v)dw,
+which is exactly the (i,j) element of right hand side of (65).□
+Lemma 5.10.(
+∂
+∂s+ ∂
+∂u
+) ∫ t
+s
+∫ u+x−s
+0
+g(s,x,u,w)dwdx
+=
+∫ t
+s
+∫ u+x−s
+0
+(
+∂
+∂s+ ∂
+∂u
+)
+g(s,x,u,w)dwdx−
+∫ u
+0
+g(s,s,u,w)dw.
+80 5. SEMI–MARKOV MODELS
+Proof.By Leibniz’s rule,
+∂
+∂s
+∫ t
+s
+∫ u+x−s
+0
+g(s,x,u,w)dwdx
+=
+∫ t
+s
+∂
+∂s
+∫ u+x−s
+0
+g(s,x,u,w)dwdx−
+∫ u
+0
+g(s,x,u,w)dw
+=
+∫ t
+s
+(∫ u+x−s
+0
+∂
+∂sg(s,x,u,w)dw−g(s,x,u,u+x−s)
+)
+dx−
+∫ u
+0
+g(s,s,u,w)dw
+and
+∂
+∂u
+∫ t
+s
+∫ u+x−s
+0
+g(s,x,u,w)dwdx
+=
+∫ t
+s
+∂
+∂u
+∫ u+x−s
+0
+g(s,x,u,w)dwdx
+=
+∫ t
+s
+(∫ u+x−s
+0
+∂
+∂sg(s,x,u,w)dw+g(s,x,u,u+x−s)
+)
+dx
+so (
+∂
+∂s+ ∂
+∂u
+) ∫ t
+s
+∫ u+x−s
+0
+g(s,x,u,w)dwdx
+=
+∫ t
+s
+∫ u+x−s
+0
+(
+∂
+∂s+ ∂
+∂u
+)
+g(s,x,u,w)dwdx−
+∫ u
+0
+g(s,s,u,w)dw.
+□
+Definition 5.11:The partial reserve (density), discounted by a deterministic spot
+rate,r(u), is defined as the matrixv vv(s,t,u,v) ={vij(s,t,u,v)}i,j∈Ewith elements
+vij(s,t,u,v) =E
+(
+1{Z(t) =j,U(t)∈(v,v+ dv)}
+∫ t
+s
+e−
+∫x
+s r(u)du dB(x)
+⏐⏐⏐⏐⏐Z(s) =i,U(s) =u
+
+.
+Clearly the discounting factor e−
+∫x
+s r(u)du can be multiplied onto the payment process (for
+fixeds), giving
+vvv(s,t,u,v) =
+∫ t
+s
+e−
+∫x
+s r(u)du
+∫ u+x−s
+0
+ppp(s,x,u,w)RRR0(x,w)ppp(x,t,w,v)dwdx+
++
+∫ t
+s
+e−
+∫x
+s r(u)du
+∫ u+x−s
+0
+ppp(s,x,u,w)RRR1(x,w)ppp(x,t,0,v)dwdx.(66)
+3. THE LIFE–INSURANCE MODEL 81
+Lemma 5.12.LetYYY(s,x,u,w) = e −
+∫x
+s r(u)duppp(s,x,u,w). Then
+(
+∂
+∂s+ ∂
+∂u
+)
+YYY(s,x,u,w)
+=−(∆MMM(s,u)−r(s)III)YYY(s,x,u,w)−∇MMM(s,u)YYY(s,x,0,w)
+with boundary conditionYYY(t,t,u,v) =I IIδ0(v−u).
+Proof.Differentiation of the product of functions,
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+YYY(s,x,u,w)
+=−∂
+∂s
+(
+e−
+∫x
+s r(u)duppp(s,x,u,w)
+)
+−∂
+∂u
+(
+e−
+∫x
+s r(u)duppp(s,x,u,w)
+)
+=−r(s)e−
+∫x
+s r(u)duppp(s,x,u,w)−e−
+∫x
+s r(u)du ∂
+∂sppp(s,x,u,w)
+−e−
+∫x
+s r(u)du ∂
+∂uppp(s,x,u,w)
+=−r(s)YYY(s,x,u,w) + e−
+∫x
+s r(u)du (∆MMM(s,u)ppp(s,x,u,w) +∇MMM(s,u)ppp(s,x,0,w))
+=−r(s)YYY(s,x,u,w) + ∆MMM(s,u)YYY(s,x,u,w) +∇MMM(s,u)YYY(s,x,0,w)
+= (∆MMM(s,u)−r(s)III)YYY(s,x,u,w) +∇MMM(s,u)YYY(s,x,0,w).
+□
+Theorem 5.13(Thiele).The partial reserves densities satisfy the PDE
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+vvv(s,t,u,v) = (∆MMM(s,u)−r(s)III)vvv(s,t,u,v) +∇MMM(s,u)vvv(s,t,0,v)
++RRR0(s,u)ppp(s,t,u,v) +RRR1(s,u)ppp(s,t,0,v)
+with boundary conditionvvv(t,t,u,v) = 000.
+Proof.We differentiate (66),
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+vvv(s,t,u,v)
+=−
+(
+∂
+∂s+ ∂
+∂u
+) ∫ t
+s
+∫ u+x−s
+0
+e−
+∫x
+s r(u)duppp(s,x,u,w)RRR0(x,w)ppp(x,t,w,v)dwdx+
+−
+(
+∂
+∂s+ ∂
+∂u
+) ∫ t
+s
+∫ u+x−s
+0
+e−
+∫x
+s r(u)duppp(s,x,u,w)RRR1(x,w)ppp(x,t,0,v)dwdx
+By Lemma 5.10, the first derivative amounts to
+(
+∂
+∂s+ ∂
+∂u
+) ∫ t
+s
+∫ u+x−s
+0
+e−
+∫x
+s r(u)duppp(s,x,u,w)RRR0(x,w)ppp(x,t,w,v)dwdx
+82 5. SEMI–MARKOV MODELS
+=
+∫ t
+s
+∫ u+x−s
+0
+(
+∂
+∂s+ ∂
+∂u
+) (
+e−
+∫x
+s r(u)duppp(s,x,u,w)
+)
+RRR0(x,w)ppp(x,t,w,v)dwdx
+−
+∫ u
+0
+e−
+∫s
+s r(u)duppp(s,s,u,w)RRR0(s,w)ppp(s,t,w,v)dw
+=
+∫ t
+s
+∫ u+x−s
+0
+(
+∂
+∂s+ ∂
+∂u
+)
+YYY(s,x,u,w)RRR0(x,w)ppp(x,t,w,v)dwdx
+−RRR0(s,u)ppp(s,t,u,v)
+=−(∆MMM(s,u)−r(s)III)
+∫ t
+s
+∫ u+x−s
+0
+YYY(s,x,u,w)RRR0(x,w)ppp(x,t,w,v)dwdx
+−∇MMM(s,u)
+∫ t
+s
+∫ u+x−s
+0
+YYY(s,x,0,w)RRR0(x,w)ppp(x,t,w,v)dwdx
+−RRR0(s,u)ppp(s,t,u,v)
+=−(∆MMM(s,u)−r(s)III)
+∫ t
+s
+∫ u+x−s
+0
+YYY(s,x,u,w)RRR0(x,w)ppp(x,t,w,v)dwdx
+−∇MMM(s,u)
+∫ t
+s
+∫ x−s
+0
+YYY(s,x,0,w)RRR0(x,w)ppp(x,t,w,v)dwdx
+−RRR0(s,u)ppp(s,t,u,v),
+and similarly for the second derivative
+(
+∂
+∂s+ ∂
+∂u
+) ∫ t
+s
+∫ u+x−s
+0
+e−
+∫x
+s r(u)duppp(s,x,u,w)RRR1(x,w)ppp(x,t,0,v)dwdx
+=−(∆MMM(s,u)−r(s)III)
+∫ t
+s
+∫ u+x−s
+0
+YYY(s,x,u,w)RRR1(x,w)ppp(x,t,0,v)dwdx
+−∇MMM(s,u)
+∫ t
+s
+∫ x−s
+0
+YYY(s,x,0,w)RRR1(x,w)ppp(x,t,0,v)dwdx
+−RRR1(s,u)ppp(s,t,0,v).
+Collecting the factors to ∆MMMand∇MMMthen gives
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+vvv(s,t,u,v) = (∆MMM(s,u)−r(s)III)vvv(s,t,u,v)
++∇MMMvvv(s,t,0,v) +RRR0(s,u)ppp(s,t,u,v) +RRR1(s,u)ppp(s,t,0,v).
+□
+It looks like a simple PDE (delayed, though) with a simple initial condition. However, the
+PDE is coupled to another PDE that solves for the unknownppp(s,t,0,v) (andppp(s,t,u,v)). In
+the case of Markov models, we have seen how product integration together with Van Loan’s
+formula solves both transition probabilities, reserves and higher order moments. This will
+be the theme of the following section, where the product integration framework is extended
+to semi–Markov models.
+4. MATRIX FORM OF THE INTEGRAL EQUATION AND ITS UNIQUE SOLUTION 83
+4. Matrix form of the integral equation and its unique solution
+LetAAA0(s,u) andAAA1(s,u) be arbitrary square matrices of the same dimension which vanish for
+u>s. While the interpretation ofsanduis still time and duration, the matrices may contain
+other terms than transition rates, such as, e.g. reward sizes at transition or rates. This will
+be important later on when dealing with reserves and higher–order moments. Therefore the
+following theorem is still linked to the semi–Markov set–up in spite of the seemingly free
+choice of matrix functions.
+Theorem 5.14.Consider a fixed interval[x 0,x]and lets,t∈[x 0,x]. Assume that
+(x,y)→AAAi(x,y),i= 0,1, are continuous matrix functions. Then the matrix integral
+equation
+XXX(s,t,u,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,u+y−s)dy)AAA1(w,u+w−s)XXX(w,t,0,v)dw
++
+t
+Ps
+(III+AAA0(y,u+y−s)dy)1{u+t−s≤v}(67)
+has a unique solutionXXX(s,t,u,v)fors,t∈[x 0,t],s≤t.
+Proof.Define
+XXX(0)(s,t,0,v) =
+t
+Ps
+(III+AAA0(y,y−s)dy)1{t−s≤v},
+XXX(n+1)(s,t,0,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)XXX(n)(w,t,0,v)dw,
+and
+XXX(s,t,0,v) =
+∞∑
+n=0
+XXX(n)(s,t,0,v).
+We show that there exists a unique solutionXXX(s,t,0,v) to the integral matrix equations for
+u= 0. This implies thatXXX(s,t,u,v) also exists and is unique.
+By continuity, bothw→P
+w
+s (III+AAA0(y,y−s)dy) andw→AAA1(w,w−s) are bounded matrix
+functions on [x 0,x], so there exists a matrixKKKsuch that 2
+⏐⏐⏐⏐⏐
+w
+Ps
+(III+AAA0(y,y−s)dy)
+⏐⏐⏐⏐⏐≤KKKand
+⏐⏐⏐AAA1(w,w−s)
+⏐⏐⏐≤KKK
+for anys,w∈[x0,x]. Then
+⏐⏐⏐⏐XXX(0)(s,t,0,v)
+⏐⏐⏐⏐≤KKK1{t−s≤v}
+2We remember that the absolute value of a matrix is defined as the matrix of the absolute values of its
+elements.
+84 5. SEMI–MARKOV MODELS
+and
+⏐⏐⏐⏐XXX(1)(s,t,0,v)
+⏐⏐⏐⏐ =
+⏐⏐⏐⏐⏐
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)XXX(0)(w,t,0,v)dw
+⏐⏐⏐⏐⏐
+≤
+∫ t
+s
+KKK31{w−s≤v}dw≤KKK3(t−s).
+Similarly,
+⏐⏐⏐⏐XXX(2)(s,t,0,v)
+⏐⏐⏐⏐ =
+⏐⏐⏐⏐⏐
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)XXX(1)(w,t,0,v)dw
+⏐⏐⏐⏐⏐
+≤
+∫ t
+s
+KKK5(w−s)dw=KKK5 1
+2(t−s)2.
+In general,
+⏐⏐⏐⏐XXX(n)(s,t,0,v)
+⏐⏐⏐⏐≤KKK2n+1 (t−s)n
+n! =KKK
+[
+KKK2(t−s)
+]n
+n! .
+Thus ∞∑
+n=0
+⏐⏐⏐⏐XXX(n)(s,t,0,v)
+⏐⏐⏐⏐≤KKKexp
+(
+KKK2(t−s)
+)
+≤KKKexp
+(
+KKK2(x−x0)
+)
+<∞,
+proving that the series ∑∞
+n=0XXX(n)(s,t,0,v) converges absolutely and uniformly over [x 0,x].
+This justifies the interchange of integration and summation, so that
+XXX(s,t,0,v) =
+∞∑
+n=0
+XXX(n)(s,t,0,v)
+=XXX(0)(s,t,0,v) +
+∞∑
+n=1
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)XXX(n−1)(w,t,0,v)dw
+=XXX(0)(s,t,0,v) +
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)XXX(w,t,0,v)dw
+which shows that
+XXX(s,t,0,v) =
+∞∑
+n=0
+XXX(n)(s,t,0,v)
+is indeed a solution, proving existence.
+Regarding uniquess, assume thatXXX1(s,t,u,v) andXXX2(s,t,u,v) both solve the integral equa-
+tion. ThenYYY(s,t,u,v) =XXX1(s,t,u,v)−XXX2(s,t,u,v) satisfies
+YYY(s,t,u,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,u+y−s)dy)AAA1(w,u+w−s)YYY(w,t,0,v)dw.
+It is enough to prove thatYYY(w,t,0,v)≡000. This follows from
+⏐⏐YYY(s,t,0,v)
+⏐⏐≤
+∫ t
+s
+⏐⏐⏐⏐⏐
+w
+Ps
+(III+AAA0(y,y−s)dy)
+⏐⏐⏐⏐⏐
+⏐⏐⏐⏐⏐AAA1(w,w−s)
+⏐⏐⏐⏐⏐
+⏐⏐⏐⏐⏐YYY(w,t,0,v)
+⏐⏐⏐⏐⏐dw
+≤KKK3
+1(t−s),
+4. MATRIX FORM OF THE INTEGRAL EQUATION AND ITS UNIQUE SOLUTION 85
+whereKKK1 is now an upper bound for the previousK KKand
+⏐⏐YYY(w,t,0,v)
+⏐⏐. Repeating the
+argument shows that
+⏐⏐YYY(s,t,0,v)
+⏐⏐≤KKK1
+(KKK2
+1)n
+n! (t−s)n≤KKK1
+(KKK2
+1)n
+n! (x−x0)n→000 asn→∞
+since the series
+∞∑
+n=0
+(KKK2
+1)n
+n! (t−s)n = exp(KKK2
+1(t−s))<∞
+converges. □
+There is a differential equation equivalent to (67), which may be convenient to work with.
+Theorem 5.15.The solutionXXX(s,t,u,v)is the unique solution to
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+XXX(s,t,u,v) =AAA0(s,u)XXX(s,t,u,v) +AAA1(s,u)XXX(s,t,0,v) (68)
+with initial condition
+XXX(t,t,u,v) =III1{u≤v}.
+Proof.By Leibniz’s rule for product integrals,
+∂
+∂s
+t
+Ps
+(III+AAA0(y,u+y−s)dy) =−AAA0(s,u)
+t
+Ps
+(III+AAA0(y,u+y−s)dy)
++
+∫ t
+s
+x
+Ps
+(III+AAA0(y,u+y−s)dy)∂
+∂sAAA0(x,u+x−s)
+t
+Px
+(III+AAA0(y,u+y−s)dy)du
+and
+∂
+∂u
+t
+Ps
+(III+AAA0(y,u+y−s)dy)
+=
+∫ t
+s
+x
+Ps
+(III+AAA0(y,u+y−s)dy)∂
+∂uAAA0(s,u+x−s)
+t
+Pu
+(III+AAA0(y,u+y−s)dy)du.
+Since the derivatives under the integrals w.r.t.sanduare identical with opposite signs, we
+get (
+∂
+∂s+ ∂
+∂u
+) t
+Ps
+(III+AAA0(y,u+y−s)dy) =−AAA0(s,u)
+t
+Ps
+(III+AAA0(y,u+y−s)dy).
+Then by Leibniz’s rule for ordinary integrals,
+(
+∂
+∂s+ ∂
+∂u
+)
+XXX(s,t,u,v)
+=−AAA0(s,u)
+∫ t
+s
+w
+Ps
+(III+AAA0(y,u+y−s)dy)AAA1(w,u+w−s)XXX(w,t,0,v)dw
+−AAA1(s,u)XXX(s,t,0,v)−AAA0(s,u)
+t
+Ps
+(III+AAA0(y,u+y−s)dy)1{u+t−s≤v}
+86 5. SEMI–MARKOV MODELS
+=−AAA0(s,u)XXX(s,t,u,v)−AAA1(s,u)XXX(s,t,0,v).
+□
+Assume thatv→XXX(s,t,u,v) is differentiable and let
+xxx(s,t,u,v) = ∂
+∂vXXX(s,t,u,v).
+Then we get a similar integral equation and PDE forxxx(s,t,u,v).
+Theorem 5.16.xxx(s,t,u,v)satisfies
+xxx(s,t,u,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,u+y−s)dy)AAA1(w,u+w−s)xxx(w,t,0,v)dw
++
+t
+Ps
+(III+AAA0(y,u+y−s)dy)δ0(v−u−t+s) (69)
+and
+−∂
+∂sxxx(s,t,u,v)−∂
+∂uxxx(s,t,u,v) =AAA0(s,u)xxx(s,t,u,v) +AAA1(s,u)xxx(s,t,0,v) (70)
+with initial condition
+xxx(t,t,u,v) =IIIδ0(u−v),
+whereδ0 denotes Dirac’sδ–function.
+Proof.Follows by differentiation w.r.t.v. We can differentiate under the integration sign
+sinceAAA0 andAAA1 are continuous functions, and hence bounded over [s,t].□
+The solution to (69) can obtained by
+xxx(0)(s,t,0,v) =
+t
+Ps
+(III+AAA0(y,y−s)dy)δ0{v−(t−s)}
+xxx(n+1)(s,t,0,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)xxx(n)(w,t,0,v)dw
+xxx(s,t,0,v) =
+∞∑
+n=0
+xxx(n)(s,t,0,v)
+xxx(s,t,u,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,u+y−s)dy)AAA1(w,u+w−s)xxx(w,t,0,v)dw
++
+t
+Ps
+(III+AAA0(y,u+y−s)dy)δ0(v−u−t+s)xxx(s,t,u,v).
+Let us carefully examine the first steps in the iteration scheme.
+xxx(1)(s,t,0,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)xxx(0)(w,t,0,v)dw
+=
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)
+t
+Pw
+(III+AAA0(y,y−s)dy)δ0{v−(t−w)}dw.
+5. AN EXTENDED PRODUCT INTEGRAL 87
+Ifv>t−s, thent−w<vfor allw∈[s,t] sot−wwill never reachv. In this case, the
+contribution is zero. Hence there can be a contribution only ifv∈[0,t−s], in which case we
+get
+xxx(1)(s,t,0,v)
+=
+t−v
+Ps
+(III+AAA0(y,y−s)dy)AAA1(t−v,t−v−s)
+t
+P
+t−v
+(III+AAA0(y,y−(t−v))dy)1[0,t−s](v).
+Thinking of it as transition matrices,xxx(1)(s,t,0,v) is the transition density matrix for starting
+at timeswith duration 0 and going to timetwith end durationvwith exactly one transition
+in [0,t−s]. The only way this can happen is by having a transition at timet−vand no
+further transition afterwards.
+Next iteration then amounts to
+xxx(2)(s,t,0,v) =
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)xxx(1)(w,t,0,v)dw
+=
+∫ t
+s
+w
+Ps
+(III+AAA0(y,y−s)dy)AAA1(w,w−s)
+×
+t−v
+Pw
+(III+AAA0(y,y−s)dy)AAA1(t−v,t−v−w)
+t
+P
+t−v
+(III+AAA0(y,y−(t−v))dy)1[0,t−w](v)dw
+Introduce
+QQQ(s,t) =
+t
+Ps
+(III+AAA0(y,y−s)dy)AAA1(t,t−s).
+Thinking of transition matrices again, this would be the transition density matrix for the
+first arrival sincesoccurring at timet. Then we can write
+xxx(2)(s,t,0,v) =
+∫ t
+s
+QQQ(s,w)QQQ(w,t−v)
+t
+P
+t−v
+(III+AAA0(y,y−(t−v))dy)1[0,t−w](v)dw
+=
+∫ t−v
+s
+QQQ(s,w)QQQ(w,t−v)
+t
+P
+t−v
+(III+AAA0(y,y−(t−v))dy)dw.
+In general, forn≥1
+xxx(n)(s,t,0,v)
+=
+∫ t−v
+s
+∫ t−v
+w1
+···
+∫ t−v
+wn−2
+QQQ(s,w 1)···QQQ(wn−1,t−v)
+t
+P
+t−v
+(III+AAA0(y,y−(t−v))dy)dwn−1···dw1
+=
+∫ t−v
+s
+∫ t−v
+w1
+···
+∫ t−v
+wn−2
+QQQ(s,w 1)···QQQ(wn−1,t−v)dwn−1···dw1
+t
+P
+t−v
+(III+AAA0(y,y−(t−v))dy)
+5. An extended product integral
+The unique solutions to the integral equations (67) and (69), or ditto delayed PDE (68) and
+(70), will be denoted by symbols that generalise the product integral for Markov processes.
+88 5. SEMI–MARKOV MODELS
+Definition 5.17:Given matrices jointly continuous square matrix functions,AAA0(t,u)
+andAAA1(t,u), we denote the unique solutionxxx(s,t,u,v) of (69) by
+xxx(s,t,u,v) =
+t,v
+Ps,u
+(III+AAA(x,w)d(x,w)),
+and refer to it as the (extended) product integral ofAAA(x,w) = (AAA0(t,u),AAA1(t,u)).
+Solutions to (67) will be denoted
+XXX(s,t,u,v) =
+t,v∏
+s,u
+(III+AAA(x,w)d(x,w)).
+Remark 5.18:Different choice of matricesA AA0(t,u) andAAA1(t,u) will result in different
+solutions. For the applications we have in mind, the matricesAAA0(t,u) andAAA1(t,u) will arise
+from a unique decomposition of a matrix
+AAA(t,u) =AAA0(t,u) +AAA1(t,u),
+where the former matrixAAA0(t,u) has to do with properties during sojourns whileA AA1(t,u)
+has to do with properties at transitions. For example, for intensity matrices ΛΛΛ(t,u) we have
+the unique decomposition into a sum of its diagonal matrix ∆Λ ΛΛ(t,u) and its off–diagonal
+matrix∇ΛΛΛ(t,u).
+In the case of a unique decomposition, will use the same notation for the product integrals,
+namely
+t,v
+Ps,u
+(III+AAA(x,w)d(x,w)) and
+t,v∏
+s,u
+(III+AAA(x,w)d(x,w)),
+whenAAA0(t,u) andAAA1(t,u) arise from a unique decomposition.
+Lemma 5.19.For a given differentiable functiong,
+(
+∂
+∂s+ ∂
+∂u
+) ∫ u+x−s
+0
+g(s,x,u,w)dw=
+∫ u+x−s
+0
+(
+∂
+∂s+ ∂
+∂u
+)
+g(s,x,u,w)dw.
+Proof.Leiniz’ rule gives that
+∂
+∂s
+∫ u+x−s
+0
+g(s,x,u,w)dw=
+∫ u+x−s
+0
+∂
+∂sg(s,x,u,w)dw−g(s,x,u,u+x−s)
+∂
+∂u
+∫ u+x−s
+0
+g(s,x,u,w)dw=
+∫ u+x−s
+0
+∂
+∂ug(s,x,u,w)dw+g(s,x,u,u+x−s)
+from which the result follows.□
+5. AN EXTENDED PRODUCT INTEGRAL 89
+Theorem 5.20.Fors≤x≤twe have that
+t,v
+Ps,u
+(III+AAA(a,b)d(a,b)) =
+∫ x+u−s
+0
+x,w
+Ps,u
+(III+AAA(a,b)d(a,b))
+t,v
+Px,w
+(III+AAA(a,b)d(a,b))dw(71)
+Proof.By definition the product integral solves
+−
+(
+∂
+∂s+ ∂
+∂u
+)x,w
+Ps,u
+(III+AAA(a,b)d(a,b))
+=AAA0(s,u)
+x,w
+Ps,u
+(III+AAA(a,b)d(a,b)) +AAA1(s,u)
+x,w
+P
+s,0
+(III+AAA(a,b)d(a,b)).
+Denote byZZZ(s,x,t,u,v) the right hand side of (71). From Lemma 5.19, we get
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+ZZZ(s,x,t,u,v)
+=
+∫ x+u−s
+0
+
+AAA0(s,u)
+x,w
+Ps,u
+(III+AAA(a,b)d(a,b)) +AAA1(s,u)
+x,w
+P
+s,0
+(III+AAA(a,b)d(a,b))
+
+
+×
+t,v
+Px,w
+(III+AAA(a,b)d(a,b))dw
+=AAA0(s,u)ZZZ(s,x,t,u,v) +AAA1(s,u)ZZZ(s,x,t,0,v).
+Furthermore, initial conditions match since
+ZZZ(s,s,s,u,v) =
+∫ u
+0
+IIIδ0(u−w)IIIδ0(w−v)dw=IIIδ0(u−v).
+Hence, for anyx∈[s,t]
+ZZZ(s,x,t,u,v) =
+t,v
+Ps,u
+(III+AAA(a,b)d(a,b)).
+□
+Corollary 5.21.Fors≤x≤twe have that
+t,v∏
+s,u
+(III+AAA(a,b)d(a,b)) =
+∫ x+u−s
+0
+x,w
+Ps,u
+(III+AAA(a,b)d(a,b))
+t,v∏
+x,w
+(III+AAA(a,b)d(a,b))dw(72)
+Proof.Follows by integration of (71).□
+We obtain the (well known) Chapman–Kolmogorov equations as follows.
+90 5. SEMI–MARKOV MODELS
+Corollary 5.22(Chapman–Kolmogorov).
+ppp(s,t,u,v) =
+∫ x+u−s
+0
+ppp(s,x,u,w)ppp(x,t,w,v)dw
+PPP(s,t,u,v) =
+∫ x+u−s
+0
+ppp(s,x,u,w)PPP(x,t,w,v)dw=
+∫ x+u−s
+0
+PPP(s,x,u,dw)PPP(x,t,w,v)
+6. The Van Loan formulae
+Theorem 5.23(Van Loan).LetA AA(x,w) = (AAA0(x,w),AAA1(x,w)),B BB(x,w) =
+(BBB0(x,w),BBB1(x,w))andC CC(x,w) = (CCC0(x,w),CCC1(x,w)), which all satisfy that they
+are the null matrix forw>x. Define
+YYYi(s,u) =
+
+AAAi(s,u)BBBi(s,u)
+000C CCi(s,u)
+
+, i= 0,1
+andYYY(s,u) = (YYY 0(s,u),YYY 1(s,u)). Then
+t,v
+Ps,u
+(III+YYY(x,w)d(x,w)) =xxx(s,t,u,v) =
+(
+xxx11(s,t,u,v)x xx12(s,t,u,v)
+000x xx22(s,t,u,v)
+)
+where
+xxx11(s,t,u,v) =
+t,v
+Ps,u
+(III+AAA(x,w)d(x,w))
+xxx22(s,t,u,v) =
+t,v
+Ps,u
+(III+CCC(x,w)d(x,w))
+xxx12(s,t,u,v) =
+∫ t
+s
+∫ u+s−x
+0
+xxx11(s,x,u,w)BBB0(x,w)xxx22(x,t,w,v)dwdx
++
+∫ t
+s
+∫ u+s−x
+0
+xxx11(s,x,u,w)BBB1(x,w)xxx22(x,t,0,v)dwdx.
+Proof.Letxxx(s,t,u,v) = P
+t,v
+s,u(III+YYY(x,w)d(x,w)). Thenx xx(s,t,u,v) satisfies
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx(s,t,u,v)
+=
+
+AAA0(s,u)BBB0(s,u)
+000C CC0(s,u)
+
+xxx(s,t,u,v) +
+
+AAA1(s,u)BBB1(s,u)
+000C CC1(s,u)
+
+xxx(s,t,0,v),(73)
+with boundary conditionxxx(s,s,u,v) =δ0(u−v)III. Let
+xxx(s,t,u,v) =
+(
+xxx11(s,t,u,v)x xx12(s,t,u,v)
+xxx21(s,t,u,v)x xx22(s,t,u,v)
+)
+.
+6. THE VAN LOAN FORMULAE 91
+First we show thatxxx21(s,t,u,v) = 000. From (73),
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx21(s,t,u,v)
+=CCC0(s,u)xxx21(s,t,u,v) +CCC1(s,u)xxx21(s,t,0,v)
+with boundary conditionxxx21(s,t,u,v) = 000 fors=t. The zero–matrix is indeed a solution, so
+by uniqueness we conclude that it is the only solution.
+Then withxxx21(s,t,u,v) = 000, the rest of the equations satisfy
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx11(s,t,u,v) =AAA0(s,u)xxx11(s,t,u,v) +AAA1(s,u)xxx11(s,t,0,v),(74)
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx22(s,t,u,v) =CCC0(s,u)xxx22(s,t,u,v) +CCC1(s,u)xxx22(s,t,0,v),(75)
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx12(s,t,u,v) =AAA0(s,u)xxx12(s,t,u,v) +BBB0(s,u)xxx22(s,t,u,v)
++AAA1(s,u)xxx12(s,t,0,v) +BBB1(s,u)xxx22(s,t,0,v).(76)
+From (74) and (75) it follows immediately that
+xxx11(s,t,u,v) =
+t,v
+Ps,u
+(III+AAA(x,w)d(x,w)),
+xxx22(s,t,u,v) =
+t,v
+Ps,u
+(III+CCC(x,w)d(x,w)).
+We then propose that
+xxx12(s,t,u,v) =
+∫ t
+s
+∫ u+x−s
+0
+xxx11(s,x,u,w)BBB0(x,w)xxx22(x,t,w,v)dwdx
++
+∫ t
+s
+∫ u+x−s
+0
+xxx11(s,x,u,w)BBB1(x,w)xxx22(x,t,0,v)dwdx(77)
+and show that it satisfies (76).
+Using Lemma 5.10 withggg(s,x,u,w) =xxx11(s,x,u,w)BBB0(x,w)xxx22(x,t,w,v) andggg(s,x,u,w) =
+xxx11(s,x,u,w)BBB1(x,w)xxx22(x,t,w,v), respectively, we get that
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx12(s,t,u,v)
+=
+∫ t
+s
+∫ u+s−x
+0
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx11(s,x,u,w)BBB0(x,w)xxx22(x,t,w,v)dwdx
++
+∫ t
+s
+∫ u+s−x
+0
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx11(s,x,u,w)BBB1(x,w)xxx22(x,t,0,v)dwdx
+−BBB0(s,u)xxx22(s,t,u,v)−BBB1(s,u)xxx22(s,t,0,v),
+92 5. SEMI–MARKOV MODELS
+where the last two terms are obtained using the boundary conditionxxx11(s,s,u,v) =IIIδ0(u−v)
+so that ∫ u
+0
+xxx11(s,s,u,w)BBB0(s,w)xxx22(s,t,w,v)dw=BBB0(s,u)xxx22(s,t,u,v),
+∫ u
+0
+xxx11(s,s,u,w)BBB1(s,w)xxx22(s,t,0,v)dw=BBB1(s,u)xxx22(s,t,0,v).
+Then using (74) and (75) we get
+(
+∂
+∂s+ ∂
+∂u
+)
+xxx12(s,t,u,v)
+=−
+∫ t
+s
+∫ u+x−s
+0
+(
+AAA0(s,u)xxx11(s,x,u,w) +AAA1(s,u)xxx11(s,x,0,w)
+)
+BBB0(x,w)xxx22(x,t,w,v)dwdx
+−
+∫ t
+s
+∫ u+x−s
+0
+(
+AAA0(s,u)xxx11(s,x,u,w) +AAA1(s,u)xxx11(s,x,0,w)
+)
+BBB1(x,w)xxx22(x,t,0,v)dwdx
+−BBB0(s,u)xxx22(s,t,u,v)−BBB1(s,u)xxx22(s,t,0,v)
+=−AAA0(s,u)xxx12(s,t,u,v)−AAA1(s,u)
+∫ t
+s
+∫ u+x−s
+0
+xxx11(s,x,0,w)BBB0(x,w)xxx22(x,t,w,v)dwdx
+−AAA1(s,u)
+∫ t
+s
+∫ u+x−s
+0
+xxx11(s,x,0,w)BBB1(x,w)xxx22(x,t,0,v)dwdx
+−BBB0(s,u)xxx22(s,t,u,v)−BBB1(s,u)xxx22(s,t,0,v)
+(∗)
+=−AAA0(s,u)xxx12(s,t,u,v)
+−AAA1(s,u)
+∫ t
+s
+∫ x−s
+0
+xxx11(s,x,0,w)
+(
+BBB0(x,w)xxx22(x,t,w,v) +BBB1(x,w)xxx22(x,t,0,v)
+)
+dwdx
+  
+=xxx12(s,t,0,v)from (77)
+−BBB0(s,u)xxx22(s,t,u,v)−BBB1(s,u)xxx22(s,t,0,v)
+=−AAA0(s,u)xxx12(s,t,u,v)−AAA1(s,u)xxx12(s,t,0,v)
+−BBB0(s,u)xxx22(s,t,u,v)−BBB1(s,u)xxx22(s,t,0,v),
+which is exactly the right hand side of (76). The equality (∗), whereu+x−sis reduced to
+x−s, follows from the fact thatxxx11(s,x,0,w) will be zero for values ofwlarger thanx−s,
+since a reset has taken place at timeu.□
+Lemma 5.24.LetAAA(x) = (AAA0(x),AAA1(x))andt→r(t)an integrable function. Then
+e−
+∫t
+sr(x)dx t,v
+Ps,u
+(III+AAA(x,w)d(x,w)) =
+t,v
+Ps,u
+(III+ ˜AAA(x,w)d(x,w)),
+where ˜AAA(x,w) = ( ˜AAA
+0
+(x,w), ˜AAA
+1
+(x,w))with
+˜AAA
+0
+(x,w) =AAA0(x,w)−r(x)IIIand ˜AAA
+1
+(x,w) =AAA1(x,w).
+6. THE VAN LOAN FORMULAE 93
+Proof.Let
+ZZZ(s,u,t,v) = e−
+∫t
+sr(x)dx t,v
+Ps,u
+(III+AAA(x)dx).
+Then
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+ZZZ(s,u,t,v)
+=−r(s)e−
+∫t
+sr(x)dx t,v
+Ps,u
+(III+AAA(x)dx)−e−
+∫t
+sr(x)dx
+(
+∂
+∂s+ ∂
+∂u
+)t,v
+Ps,u
+(III+AAA(x)dx)
+=−r(s)e−
+∫t
+sr(x)dx t,v
+Ps,u
+(III+AAA(x)dx)
++ e−
+∫t
+sr(x)dx
+
+AAA0(s,u)
+t,v
+Ps,u
+(III+AAA(x)dx) +AAA1(s,u)
+t,v
+P
+s,0
+(III+AAA(x)dx)
+
+
+= e−
+∫t
+sr(x)dx
+
+
+[
+AAA0(s,u)−r(s)III
+]t,v
+Ps,u
+(III+AAA(x)dx) +AAA1(s,u)
+t,v
+P
+s,0
+(III+AAA(x)dx)
+
+
+=
+[
+AAA0(s,u)−r(s)III
+]
+ZZZ(s,t,u,v) +AAA1(s,u)ZZZ(s,t,0,v)
+□
+To compute the partial reservesvvv(s,t,u,v), (66), parametrise as follows.
+Corollary 5.25.Let
+YYY 0(s,u) =
+(
+∆MMM(s,u)−r(s)III RRR0(s,u)
+000 ∆M MM(s,u)
+)
+,YYY 1(s,u) =
+(
+∇MMM(s,u)R RR1(s,u)
+000∇M MM(s,u)
+)
+,
+andYYY(s,u) = (YYY 0(s,u),YYY 1(s,u)). Then the discounted reservesvvv(s,t,u,v)with deter-
+ministic interest ratesr(t)can be calculated as follows:
+t,v
+Ps,u
+(III+YYY(x,w)d(x,w)) =
+
+e−
+∫t
+sr(x)dxppp(s,t,u,v)v vv(s,t,u,v)
+000p pp(s,t,u,v)
+
+.
+Proof.Follows directly from Van Loan, the definition (66) and Lemma 5.12 for the upper
+left block matrix.□
+The Van Loan formula does not hold for ∏t,v
+s,u directly, but only in combination with P
+t,v
+s,u,
+which we will refer to as a “hybrid” version of Van Loan’s formula. This is entirely similar
+to (72), where the Chapman–Kolmogorov equation for the c.d.f. version of the transition
+probabilities also needs the presence of the density version.
+94 5. SEMI–MARKOV MODELS
+Theorem 5.26(Hybrid Van Loan formula).Let
+zzz11(s,u,t,v) =
+t,v
+Ps,u
+(III+AAA(a,b)d(a,b))
+ZZZ22(s,u,t,v) =
+∫ v
+0
+t,v
+Ps,u
+(III+CCC(a,b)d(a,b))dv
+and
+ZZZ12(s,t,u,v) =
+∫ t
+s
+∫ u+x−s
+0
+zzz11(s,u,x,w)BBB0(x,w)ZZZ22(x,w,t,v)dwdx
++
+∫ t
+s
+∫ u+x−s
+0
+zzz11(s,u,x,w)BBB1(x,w)ZZZ22(x,0,t,v)dwdx.
+Then the latter can be computed as the solution to the PDE
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+ZZZ(s,t,u,v) =DDD0(s,u)ZZZ(s,t,u,v) +DDD1(s,u)ZZZ(s,t,0,v)
+with initial condition
+ZZZ(s,s,u,v) =
+(
+IIIδ0(v−u) 0 00
+000I II1{v≥u}
+)
+,
+where
+DDDi(s,u) =
+
+AAAi(s,u)BBBi(s,u)
+000C CCi(s,u)
+
+, ZZZ(s,t,u,v) =
+(
+zzz11(s,t,u,v)Z ZZ12(s,t,u,v)
+000Z ZZ22(s,t,u,v)
+)
+fori= 0,1.
+Remark 5.27:The integral equation form for the hybrid Van Loan is as follows.
+ZZZ(s,t,u,v) =
+∫ t
+s
+w
+Ps
+(III+DDD0(y,u+y−s)dy)DDD1(w,u+w−s)ZZZ(w,t,0,v)dw
++
+t
+Ps
+(III+DDD0(y,u+y−s)dy)
+(
+IIIδ0(v−u−(t−s)) 0 00
+000I II1{u+t−s≤v}
+)
+(78)
+If we define the correponding integrated partial reserves,
+Vij(s,t,u,v) =E
+(
+1{Z(t) =j,U(t)≤v}
+∫ t
+s
+e−
+∫x
+s r(u)du dB(x)
+⏐⏐⏐⏐⏐Z(s) =i,U(s) =u
+
+,
+then by integrating (66),
+VVV(s,t,u,v) =
+∫ t
+s
+e−
+∫x
+s r(u)du
+∫ u+x−s
+0
+ppp(s,x,u,w)RRR0(x,w)PPP(x,t,w,v)dwdx+
++
+∫ t
+s
+e−
+∫x
+s r(u)du
+∫ u+x−s
+0
+ppp(s,x,u,w)RRR1(x,w)PPP(x,t,0,v)dwdx.(79)
+The we obtain from the hybrid Van Loan the following:
+6. THE VAN LOAN FORMULAE 95
+Corollary 5.28.Let
+YYY 0(s,u) =
+(
+∆MMM(s,u)−r(s)III RRR0(s,u)
+000 ∆M MM(s,u)
+)
+,YYY 1(s,u) =
+(
+∇MMM(s,u)R RR1(s,u)
+000∇M MM(s,u)
+)
+,
+andYYY(s,u) = (YYY 0(s,u),YYY 1(s,u)). Then the solution to
+−
+(
+∂
+∂s+ ∂
+∂u
+)
+ZZZ(s,t,u,v) =YYY 0(s,u)ZZZ(s,t,u,v) +YYY 1(s,u)ZZZ(s,t,0,v)
+with initial condition
+ZZZ(s,s,u,v) =
+(
+IIIδ0(v−u) 0 00
+000I II1{v≥u}
+)
+,
+is given by
+ZZZ(s,t,u,v) =
+
+e−
+∫t
+sr(x)dxppp(s,t,u,v)V VV(s,t,u,v)
+000P PP(s,t,u,v)
+
+.
+Proof.Rewrite
+VVV(s,t,u,v) =
+∫ t
+s
+∫ u+x−s
+0
+(
+e−
+∫x
+s r(u)duppp(s,x,u,w)
+)
+RRR0(x,w)PPP(x,t,w,v)dwdx
++
+∫ t
+s
+∫ u+x−s
+0
+(
+e−
+∫x
+s r(u)duppp(s,x,u,w)
+)
+RRR1(x,w)PPP(x,t,0,v)dwdx.
+By Lemma 5.24,
+e−
+∫x
+s r(u)duppp(s,x,u,w) =
+x,w∏
+s,u
+(III+ ˜MMM(s,y)dy),
+where ˜MMM(s,y) = ( ˜MMM
+0
+(s,y), ˜MMM
+1
+(s,y)) with
+˜MMM
+0
+(s,y) = ∆MMM(s,y)−r(s)III, ˜MMM
+1
+(s,y) =∇MMM(s,y),
+from which the result follows from Theorem 5.26.□
+
+CHAPTER 6
+Random benefits and higher order moments
+1. Random setup
+The setup is identitcal to Section 1, except for the lump sum payments,b ij(t), which are
+now, in general, random. Therefore they will be denoted with capital lettersB ij(t), which is
+both customary in probability theory and to destinguish random variables from deterministic
+functions. The rest of the notation follows that of Section 1.
+Define the total accumulated and undiscounted benefits,
+R0(s,t) =
+∫ t
+s
+bX(u)(u)du+
+∑
+i,j
+∫ t
+s
+Bij(u)dNij(u),(80)
+whereb i(u) are the expected rates (therefore, deterministic) earned in statei, andN ij(u)
+denotes the counting process which increases one if a transition fromitojduring time
+[u,u+ du) triggers a payment, which happens with probabilityd ij(u)du. As in Section 1,
+the probability that a transition does not trigger a payment isc ij(u)du, and the probability
+of a transition (of any kind) during [u,u+ du) isλij(u)du=c ij(u)du+d ij(u)du.
+The total discounted benefits, based on a deterministic interest rater(t), is then given by
+R(s,t) =
+∫ t
+s
+e−
+∫u
+s r(z)dzR0(s,du)
+=
+∫ t
+s
+e−
+∫u
+s r(z)dzbX(u)(u)du+
+∑
+i,j
+∫ t
+s
+e−
+∫u
+s r(z)dzBij(u)dNij(u).(81)
+We assume that the random benefits,B ij(u), are independent of{Nij(x)}x≥0.
+2. The distribution of undiscounted benefits
+Now define the benefit size distribution functions and moment generating distributions as
+FB
+ij (x;t) =P(B ij(t)≤x)
+ˆFB
+ij (θ;t) =E
+[
+eθBij(t)]
+, ˆFFF
+B
+(θ;t) ={ˆFB
+ij (θ;t)}i,j∈E,
+and let
+ˆGij(θ;s,t) =E
+[
+1{X(t)=j}eθR0(s,t)⏐⏐⏐X(s) =i
+]
+, ˆGGG(θ;s,t) ={ˆGij(θ;s,t)}i,j=1,...,p.
+97
+98 6. RANDOM BENEFITS
+Then the distribution ofR 0(s,t) is fully characterised by following result.
+Theorem 6.1.Let
+AAA(θ;u) = ΛΛΛ 1(u)•ˆFFF
+B
+(θ;u) + ΛΛΛ 000(u) +θ∆∆∆(bbb(t)).(82)
+where{αij}•{βij}={αijβij}denotes the Schur (entry–wise or Hadamard) matrix
+product. Then
+ˆGGG(θ;s,t) =
+t∏
+s
+(
+III+AAA(θ;u) du
+)
+(83)
+Proof.From the Markov property and conditional independence, fors<u<twe have that
+E
+[
+1{X(t) =j}eθR0(s,t)⏐⏐⏐X(s) =i
+]
+=
+∑
+k
+E
+[
+eθR0(s,u)eθR0(u,t)1{X(u) =k}1{X(t) =j}
+⏐⏐⏐X(s) =i
+]
+=
+∑
+k
+E
+[
+eθR0(s,u)1{X(u) =k}E
+(
+eθR0(u,t)1{X(t) =j}
+⏐⏐⏐Fu
+)⏐⏐⏐⏐⏐X(s) =i
+
+
+=
+∑
+k
+E
+[
+eθR0(s,u)1{X(u) =k}E
+(
+eθR0(u,t)1{X(t) =j}
+⏐⏐⏐X(u) =k
+)⏐⏐⏐⏐⏐X(s) =i
+
+
+=
+∑
+k
+E
+(
+eθR0(s,u)1{X(u) =k}
+⏐⏐⏐X(s) =i
+)
+E
+(
+eθR0(u,t)1{X(t) =j}
+⏐⏐⏐X(u) =k
+)
+,
+i.e.
+ˆGGG(θ;s,t) =ˆGGG(θ;s,u)ˆGGG(θ;u,t).
+Then write
+ˆGGG(θ;s,t+ dt)−ˆGGG(θ;s,t) = ˆGGG(θ;s,t)
+(
+ˆGGG(θ;t,t+ dt)−III
+)
+(84)
+and consider ˆGGG(θ;t,t+ dt). By conditioning on whether there is an arrival or not during
+[t,t+ dt), the expectation is then given by
+ˆGij(θ;t,t+ dt) =
+(
+δij +λ0
+ij(t)dt
+)
+eθbi(t)dt +λ1
+ij(t)dtE
+(
+eθbi(t)dt+θBij(t))
+=
+(
+δij +λ0
+ij(t)dt
+)(
+1 +θbi(t)dt
+)
++λ1
+ij(t) dt ˆFB
+ij (θ;t)
+(
+1 +θbi(t)dt
+)
+=δij +δijθbi(t)dt+λ0
+ij(t)dt+λ1
+ij(t)dt ˆFB
+ij (θ;t),
+which on matrix form is
+ˆGGG(θ;t,t+ dt) =III+ ΛΛΛ 0(t) dt+ ΛΛΛ 1(t) dt•ˆFFF(θ;t) +θ∆∆∆(bbb(t))dt=III+AAA(θ;t) dt.
+Then from (84),
+ˆGGG(θ;s,t+ dt)−ˆGGG(θ;s,t) =ˆGGG(θ;s,t)AAA(θ;t)dt,
+proving the result.□
+3. UNDISCOUNTED MOMENTS 99
+This is a strong result that suggests that we may simply replace all random variables by
+their corresponding moment generating functions for the sake of computing the moments
+generating function ofR 0(s,t).
+3. Undiscounted moments
+For the sake of computing moments we then proceed as follows. We now define the partial
+moments forR 0(s,t) as
+m(k)
+ij (s,t) =E
+[
+1{X(t) =j}R0(s,t)k⏐⏐⏐X(s) =i
+]
+, MMM(k)(s,t) ={m(k)
+ij (s,t)}i,j∈E,
+and moments for the random rewards,B ij(t), as
+µ(k)
+ij (t) =E
+(
+Bij(t)k)
+, µµµ(k)(t) ={µ(k)
+ij (t)}i,j∈E.
+The momentsµ(k)
+ij (t) may not exist if the claim size distributions are heavy–tailed. In
+the following weassumethe existence of moments up to the orders treated, and derive an
+expression for how to compute them.
+The momentsµµµ(k)(t) are then obtained by evaluating thek’th order derivative of theˆFFF
+B
+(θ;t)
+atθ= 0.
+Fork= 0, we are simply evaluating the expressions atθ= 0, giving
+MMM(0)(s,t) =PPP(s,t)
+CCC(0)(t) def=AAA(θ;u)|θ=0= ΛΛΛ(t).
+Fork≥1, we get
+CCC(1)(t) def= ∂
+∂θAAA(θ;u)
+⏐⏐⏐⏐⏐θ=0
+= ΛΛΛ 1(t)•∂
+∂θ
+ˆFFF
+B
+(θ;u)
+⏐⏐⏐⏐⏐θ=0
++ ∆∆∆(bbb(u))
+= ΛΛΛ 1(t)•µµµ(1)(u) + ∆∆∆(bbb(u))
+CCC(2)(t) def= ∂2
+∂θ2AAA(θ;u)
+⏐⏐⏐⏐⏐⏐θ=0
+= ΛΛΛ 1(t)•∂2
+∂θ2
+ˆFFF
+B
+(θ;u)
+⏐⏐⏐⏐⏐⏐θ=0
+= ΛΛΛ 1(t)•µµµ(2)(u).
+Fork≥3, we get
+∂k
+∂θkAAA(θ;u) = ΛΛΛ 1(u)•∂k
+∂θk
+ˆFFF
+B
+(θ;u),
+so that
+CCC(k)(u) def= ∂k
+∂θkAAA(θ;u)
+⏐⏐⏐⏐⏐⏐θ=0
+= ΛΛΛ 1(u)•µµµ(k)(u).(85)
+100 6. RANDOM BENEFITS
+From (83) we get that
+∂
+∂s
+∂k
+∂θk
+ˆGGG(θ;s,t) =∂k
+∂θk
+∂
+∂s
+ˆGGG(θ;s,t)
+=−∂k
+∂θk
+(
+AAA(θ;s)ˆGGG(θ;s,t)
+)
+=−
+k∑
+i=0
+(
+k
+i
+)
+∂i
+∂θiAAA(θ;s)∂k−i
+∂θk−i
+ˆGGG(θ;s,t),
+Introducing reduced moments,
+MMM(k)
+r (s,t) = MMM(k)(s,t)
+k! , CCC(k)
+r (t) =CCC(k)(t)
+k! ,
+and evaluating r.h.s. and l.h.s. of the above differential equation atθ= 0, we then get that
+∂
+∂sMMM(k)
+r (s,t) =−
+k∑
+i=0
+CCC(i)
+r (s)MMM(k−i)
+r (s,t) (86)
+Fork= 1 this amounts to
+∂
+∂sMMM(1)
+r (s,t) =−ΛΛΛ(s)MMM(1)
+r (s,t)−CCC(1)
+r (s)PPP(s,t) (87)
+with initial conditionMMM(1)
+r (s,t) = 000 fors=t. The solution to this equation is given by
+MMM(1)
+r (s,t) =
+∫ t
+s
+u∏
+s
+(III+ ΛΛΛ(x)dx)CCC(1)
+r (u)
+t∏
+u
+(III+ ΛΛΛ(x)dx)du.
+This follows directly by verification by differentiating the r.h.s. using Leibniz’ rule. Applying
+Van Loan, we have hence proven the following result.
+Theorem 6.2.
+t∏
+s
+
+III+
+
+ΛΛΛ(u)CCC(1)
+r (u)
+000 Λ ΛΛ(u)
+
+ du
+
+ =
+
+PPP(s,t)MMM(1)
+r (s,t)
+000P PP(s,t)
+
+.
+In general, the firstkorder reduced moments can be computed as follows.
+Theorem 6.3(Moments).
+t∏
+s
+
+
+III+
+
+
+ΛΛΛ(u)C CC(1)
+r (u)···CCC(k)
+r (u)
+000 Λ ΛΛ(u)···CCC(k−1)
+r (u)
+. . .
+000 0 00···ΛΛΛ(u)
+
+
+du
+
+
+=
+
+
+PPP(s, t)MMM (1)
+r (s, t)···MMM (k)
+r (s, t)
+000P PP(s, t)···MMM (k−1)
+r (s, t)
+. . .
+000 0 00···PPP(s, t)
+
+
+.
+Proof.Follows by simple verification that the equation system is equivalent to (86).□
+4. DISCOUNTED MOMENTS 101
+4. Discounted moments
+It is now easy to obtain the corresponding moments forR(s,t) in the following way. Dis-
+counting can obviously been obtained by pre–discounting all rates and lump sum payment,
+i.e. for a fixeds, use rates
+˜bi(u) = e−
+∫u
+s r(x)dxbi(u), i= 1,...,p,
+and lump sum payments
+˜Bij(u) = e−
+∫u
+s r(x)dxBij(u)
+instead. But then
+˜µ(k)
+ij (u) =E( ˜Bij(u)k) = e−k
+∫u
+s r(x)dx E(Bij(u)k), k≥1,
+so
+˜µµµ(k)(u) ={˜µ(k)
+ij (u)}i,j∈E= e−k
+∫u
+s r(x)dxµµµ(k)(u).
+Thus the corresponding matricesCCC(k)(u) becomes
+˜CCC
+(0)
+(u) = ΛΛΛ(u)
+˜CCC
+(k)
+(u) = e−k
+∫u
+s r(x)dxCCC(k)(u)
+and also
+˜CCC
+(k)
+r (u) = e−k
+∫u
+s r(x)dxCCC(k)
+r (u).
+In principle the discounted moment can then be computed using Theorem 6.3 with these
+parameters. However,
+VVV(s,t) =VVV (1)(s,t) = ˜MMM
+(1)
+(s,t)
+=
+∫ t
+s
+u∏
+s
+(III+ ΛΛΛ(x)dx) ˜CCC
+(1)
+r (u)
+t∏
+u
+(III+ ΛΛΛ(x)dx)du
+=
+∫ t
+s
+u∏
+s
+(III+ ΛΛΛ(x)dx)e−
+∫u
+s r(x)dxCCC(1)
+r (u)
+t∏
+u
+(III+ ΛΛΛ(x)dx)du
+=
+∫ t
+s
+u∏
+s
+(III+ ΛΛΛ(x)−r(x)IIIdx)CCC(1)
+r (u)
+t∏
+u
+(III+ ΛΛΛ(x)dx)du.
+Thus we get from Van Loan,
+Theorem 6.4.
+t∏
+s
+
+III+
+
+ΛΛΛ(u)−r(u)III CCC(1)
+r (u)
+000 Λ ΛΛ(u)
+
+ du
+
+ =
+(
+exp(−
+∫t
+sr(x)dx)PPP(s,t)V VV(s,t)
+000P PP(s,t)
+)
+.
+In many situation, it will be easier to compute the reserves using Theorem 6.4 rather than
+Theorem 6.3, since the element above the diagonal becomes more involved, even for the case
+of constant interest rate, where it must be discounted by the exponential funcion of the
+interest rate.
+102 6. RANDOM BENEFITS
+For higher order moments we proceed as follows.
+From (86) we get
+∂
+∂sVVV (k)
+r (s,t) =−
+k∑
+i=0
+˜CCC
+(i)
+r (s)VVV (k−i)
+r (s,t).(88)
+In particular,VVV (0)
+r (s,t) =MMM(0)
+r (s,t) =PPP(s,t) and ˜CCC
+(0)
+r (s) = ΛΛΛ(s).
+Rewrite as
+∂
+∂sVVV (k)
+r (s,t) + ΛΛΛ(s)VVV (k)
+r (s,t) =−
+k∑
+i=1
+˜CCC
+(i)
+r (s)VVV (k−i)
+r (s,t).
+Multiply both side with ∏s
+t(III+ ΛΛΛ(x)dx) to get
+s∏
+t
+(III+ ΛΛΛ(x)dx) ∂
+∂sVVV (k)
+r (s,t) +
+s∏
+t
+(III+ ΛΛΛ(x)dx)ΛΛΛ(s)VVV (k)
+r (s,t)
+=−
+k∑
+i=1
+s∏
+t
+(III+ ΛΛΛ(x)dx) ˜CCC
+(i)
+r (s)VVV (k−i)
+r (s,t).
+This is the same as
+∂
+∂s
+
+
+s∏
+t
+(III+ ΛΛΛ(x)dx)VVV (k)
+r (s,t)
+
+ =−
+k∑
+i=1
+s∏
+t
+(III+ ΛΛΛ(x)dx) ˜CCC
+(i)
+r (s)VVV (k−i)
+r (s,t).
+Now integrate
+∫ t
+s
+∂
+∂y
+
+
+y∏
+t
+(III+ ΛΛΛ(x)dx)VVV (k)
+r (y,t)
+
+ dy=−
+k∑
+i=1
+∫ t
+s
+y∏
+t
+(III+ ΛΛΛ(x)dx) ˜CCC
+(i)
+r (y)VVV (k−i)
+r (y,t)dy.
+The l.h.s. equals
+t∏
+t
+(III+ ΛΛΛ(x)dx)VVV (k)
+r (t,t)−
+s∏
+t
+(III+ ΛΛΛ(x)dx)VVV (k)
+r (s,t) =−
+s∏
+t
+(III+ ΛΛΛ(x)dx)VVV (k)
+r (s,t).
+Hence have that
+s∏
+t
+(III+ ΛΛΛ(x)dx)VVV (k)
+r (s,t) =
+k∑
+i=1
+∫ t
+s
+y∏
+t
+(III+ ΛΛΛ(x)dx) ˜CCC
+(i)
+r (y)VVV (k−i)
+r (y,t)dy.
+Multiply both sides with ∏t
+s(III+ ΛΛΛ(x)dx)VVV (k)
+r (s,t) to get
+VVV (k)
+r (s,t) =
+k∑
+i=1
+∫ t
+s
+y∏
+s
+(III+ ΛΛΛ(x)dx) ˜CCC
+(i)
+r (y)VVV (k−i)
+r (y,t)dy.
+Since ˜CCC
+(k)
+(u) = e−k
+∫u
+s r(x)dxCCC(k)(u), this is readily rewritten as
+Theorem 6.5.
+VVV (k)
+r (s,t) =
+k∑
+i=1
+∫ t
+s
+y∏
+s
+(III+
+[
+ΛΛΛ(x)−ir(x)III
+]
+dx)CCC(i)
+r (y)VVV (k−i)
+r (y,t)dy.
+4. DISCOUNTED MOMENTS 103
+For discounted moments, a version of Theorem 6.3 and a generalisation of Theorem 6.4 is as
+follows.
+Theorem 6.6.
+t∏
+s
+
+
+III+
+
+
+ΛΛΛ(u)−kr(u)III C CC(1)
+r (u)···CCC(k)
+r (u)
+000 Λ ΛΛ(u)−(k−1)r(u)III···CCC(k−1)
+r (u)
+. . .
+000 0 00···Λ ΛΛ(u)
+
+
+du
+
+
+=
+
+
+PPP(s, t)V VV (1)
+r (s, t)···VVV (k)
+r (s, t)
+000P PP(s, t)···VVV (k−1)
+r (s, t)
+. . .
+000 0 00···PPP(s, t)
+
+
+
+
+e−k
+∫ t
+sr(u) duIII0 00···0 00
+000 e −(k−1)
+∫ t
+sr(u) duIII···000
+000 0 00 . . . 000
+000 0 00···I II
+
+
+.
+Proof.Consider the derivative of a generic term on the r.h.s. (entrance ofith block row,
+i= 0,...,k, and column rowi+jwithj= 0,...,k−i:
+∂
+∂s
+(
+e−(k−i−j)
+∫t
+sr(u)duVVV (j)
+r (s,t)
+)
+=r(s)(k−i−j)e−(k−i−j)
+∫t
+sr(u)duVVV (j)
+r (s,t) + e−(k−i−j)
+∫t
+sr(u)du ∂
+∂sVVV (j)
+r (s,t).
+Inserting (88), we get that
+∂
+∂s
+(
+e−(k−i−j)
+∫t
+sr(u)duVVV (j)
+r (s,t)
+)
+= (k−i−j)r(u)
+[
+e−(k−i−j)
+∫t
+sr(u)duVVV (j)
+r (s,t)
+]
+−e−(k−i−j)
+∫t
+sr(u)du
+
+
+j∑
+m=0
+˜CCC
+(m)
+r (s)VVV (j−m)
+r (s,t)
+
+
+= (k−i−j)r(u)
+[
+e−(k−i−j)
+∫t
+sr(u)duVVV (j)
+r (s,t)
+]
+−e−(k−i−j)
+∫t
+sr(u)du
+
+ΛΛΛ(s)VVV (j)
+r (s,t) +
+j∑
+m=1
+˜CCC
+(m)
+r (s)VVV (j−m)
+r (s,t)
+
+
+=−
+(
+ΛΛΛ(s)−(k−i−j)r(s)III
+)[
+e−(k−i−j)
+∫t
+sr(u)duVVV (j)
+r (s,t)
+]
+−
+j∑
+m=1
+CCC(m)
+r
+[
+e−(k−i−j+m)
+∫t
+sr(u)duVVV (j−m)
+r (s,t)
+]
+.
+Hence the generic terms exactly solve the differential equation induced by the proposed
+product integral.□
+As a consequence,VVV (k)
+r (s,t) equals the upper right block–matrix of the matrix exponential.
+In fact, the last block column contains the matricesVVV (i)
+r (s,t),i= 0,...,k.
+104 6. RANDOM BENEFITS
+5. Derivative securities
+We here provide a very short and actuarial approach to option pricing. Assume that a
+stockprice is given by a stochastic process{S(t)}t≥0, in a market with constant interest rate
+r>0. A timeTthe value of the stock isS(T).
+Assume that we want to make an agreement thatg(S(T)) is paid out at timeTinstead of
+T. That could e.g. be withg(x) = max(x−c,0), which would then amount to an European
+call option with strikec: ifS(T)<c, then we would like to buy the stock at priceS(T), in
+which case the option is worthless, and ifS(T)>c, then we would prefer to buy at pricec, in
+which case the differenceS(T)−cmust be priced and paid for. If instead we are interested
+in selling at timeT, the corresponding arrangement would beg(x) = max(c−x,0), which is
+referred to as an European put option.
+The price for such arrangements can be evaluated by
+pg =E
+
+e−rTg
+(
+S(0)erT S(T)
+E(S(T))
+)
+
+Example 6.7(General Black–Scholes):In the Black–Scholes model,
+S(T) =S(0)e (r−1
+2σ2)T+σWT, WT∼N(0,T),
+i.e.S(T) has a log–normal distribution. Using knowledge regarding the moment generating
+function of the normal distribution,
+E(S(T)) =S(0)e rT
+so
+pg =E
+
+e−rTg
+(
+S(0)e(r−1
+2σ2)T+σWT
+)
+
+= e−rT
+√
+2πT
+∫∞
+−∞
+g
+(
+S(0)e(r−1
+2σ2)T+σy
+)
+e−y2/(2T) dy.
+Example 6.8(Black–Scholes gauranteed minimum):Hereg(x) = max(x,G) for the guar-
+anteed amountG. Then
+pg = e−rT
+√
+2πT
+∫∞
+−∞
+g
+(
+S(0)e(r−1
+2σ2)T+σy
+)
+e−y2/(2T) dy
+= e−rT
+√
+2πT
+∫∞
+−∞
+max
+(
+S(0)e(r−1
+2σ2)T+σy,G
+)
+e−y2/(2T) dy.
+Now
+S(0)e(r−1
+2σ2)T+σy≥G
+iff
+y≥log(G/S(0))−(r−1
+2σ2)T)
+σ =:L
+5. DERIVATIVE SECURITIES 105
+so
+pg = e−rT
+(∫ L
+−∞
+G 1√
+2πTe−y2/(2T) dy+
+∫∞
+L
+e(r−1
+2σ2)T+σy 1√
+2πTe−y2/(2T) dy
+)
+= e−rT
+
+
+∫ L/
+√
+T
+−∞
+G 1√
+2πe−y2/2 dy+
+∫∞
+L
+e(r−1
+2σ2)T+σy 1√
+2πTe−y2/(2T) dy
+
+
+= e−rTG
+(
+Φ(L/
+√
+T) +
+∫∞
+L
+erT 1√
+2πTe−y2/(2T)+ 2Tσy
+2T −T 2σ2
+2T dy
+)
+= e−rTGΦ(L/
+√
+T) +
+∫∞
+L
+1√
+2πTe−(y−Tσ)2/(2T) dy
+= e−rTGΦ(L/
+√
+T) +
+∫∞
+(L−Tσ)/
+√
+T
+1√
+2πe−y2/2 dy
+= e−rTGΦ
+
+ log(G/S(0))−(r−1
+2σ2)T)√
+Tσ
+
+ + 1−Φ
+
+ log(G/S(0))−(r+1
+2σ2)T)√
+Tσ
+
+
+= e−rTGΦ
+
+ log(G/S(0))−(r−1
+2σ2)T)√
+Tσ
+
+ + Φ
+
+−log(G/S(0)) + (r+1
+2σ2)T)√
+Tσ
+
+
+In continuous time finance, models are usually written in terms of so–called stochastic dif-
+ferential equations (SDE). This subject goes beyond the scope of these lecture notes, never-
+theless, we may provide the following intuitive introduction to the subject, which contains
+most of the ideas behind the rigorous theory.
+IfS t denotes the price of a financial asset or portfolio, then an SDE is on the form
+dSt =µ(t,St)dt+σ(t,St)dWt.
+Hereµ(x,y) andσ(x,y) are determinisitic (known) functions. The former is called the drift
+and the latter the volatility. The process{Wt}t≥0is called a Browninan motion or Wiener
+process. The only thing we need to know about this process is that it has independent
+increment, i.e. ifs≤t≤uthenWu−Wt is independent ofW t−Ws, and theW t−Ws∼
+N(0,t−s).
+The symbol
+dWt =Wt+dt−Wt∼N(0,dt).
+We use the usual convention as earlier that (dt) 2 = 0.
+By definition,
+E(dWt) = 0
+E((dWt)2) =Var(dW 2
+t ) = dt.
+Furthermore,
+Var(dW 2
+t ) =...= 0.
+106 6. RANDOM BENEFITS
+Hence we have a random variable, dW 2
+t , with zero variance and mean dt. Hence it must be
+equal to its mean (almost surely), i.e.
+dW 2
+t = dt.
+This constitutes the second multiplication rule. Finally,
+E(dt·dWt) = dt·0 = 0.
+We summarize these rules in the multiplication table:
+× dt dWt
+dt 0 0
+dWt 0 dt
+With this we can then derive a chain rule for computing df(t,W t). We look at the Taylor
+expansion off(t,x),
+f(t+ ∆t,x+ ∆x) =f(t,x) +f t(t,x)∆t+f x(t,x)∆x
++ 1
+2
+(
+ftt(t,x)(∆t) 2 + 2ftx(t,x)∆t∆x+f xx(t,x)(∆x) 2)
++o((∆t) 2 + (∆x) 2).
+Now let replace ∆tby dt,xbyW t and ∆xby dW t. Then we get
+f(t+ dt,Wt+dt) =f(t,W t) +ft(t,Wt)dt+f x(t,Wt)dWt + 1
+2fxx(t,Wt)dt.
+Denoting
+df(t,Wt) =f(t+ dt,W t+dt)−f(t,Wt),
+we then obtain what is known as Itˆ o’s formula
+df(t,Wt) =ft(t,Wt)dt+f x(t,Wt)dWt + 1
+2fxx(t,Wt)dt.(89)
+With exactly the same argument, for the more general processS t we would obtain
+df(t,St) =ft(t,St)dt+f x(t,St)dWt + 1
+2fxx(t,Wt)(dSt)2.(90)
+Expanding on
+(dSt)2 = (µ(t,St)dt+σ(t,St)dWt)2 =σ2(t,St)dt,
+where we have used the multiplication table, we get
+df(t,St) =
+[
+ft(t,St) +fx(t,St)µ(t,St) +1
+2σ2(t,St)
+]
+dt+σ(t,St)dWt.(91)
+Example 6.9(Example (6.7) continued):Let us have a look at the Black–Scholes equation,
+but replacing then interest raterby another constant driftµ, i.e.
+St =S 0e(µ−1
+2σ2)t+σWt.
+Then
+St =f(t,W t)
+5. DERIVATIVE SECURITIES 107
+where
+f(t,x) =S 0e(µ−1
+2σ2)t+σx.
+Now
+ft(t,x) =
+(
+µ−1
+2σ2
+)
+f(t,x)
+fx(t,x) =σf(t,x)
+fxx(t,x) =σ2f(t,x).
+Then by (89), we get that
+dSt = df(t,Wt)
+=
+(
+µ−1
+2σ2
+)
+f(t,Wt)dt+σf(t,Wt)dWt + 1
+2σ2f(t,Wt)dt
+=µSt dt+σSt dWt.
+This is the usual expression for the Black–Scholes model.
+When computing prices, we replaceµby the risk–free interest rater. The argumentation
+is based on a so–called no–arbitrage argument, but may be understood as follows. From
+an actuarial point of view, it seems reasonable that expectation of the present value ofS t
+should exactly be its priceS 0. This is how fair premiums are computed. But
+E
+(
+e−rtSt
+)
+=E
+(
+S0e(µ−r−1
+2σ2)t+σWt
+)
+=S 0e(µ−r−1
+2σ2)tE
+(
+eσWt
+)
+=S 0e(µ−r−1
+2σ2)te
+1
+2σ2t
+=S 0e(µ−r)t.
+The second to the last step is obtained through the moment generating function for the
+N(0,t) distribution.
+So unlessµ=r, the expected present value ofS t will either be worth more thanS 0 or less
+thanS 0. If it is worth more, then taking a huge loan at interest rater, could provide us
+with anarbitrarilylarge gain. Similarly, if it is less, then a selling argument yields the same.
+To avoid the possibility arbitrary large gains, present value of any future prices relating to
+St should be prices as if the drift of the process equals the interest rate.
+The argument by replacing the drift by the interest is not valid in general, but a special
+feature of the Black–Scholes model. In general, one looks for a change of parameters such
+that the present value is exactly that ofS 0.□
+108 6. RANDOM BENEFITS
+6. The unit-link reserve
+In unit linked insurance policies, parts of the benefit will depend on exogenous funds like
+stock prices or investments. For example, an insurance policy may stipulate that the value
+of an investment portfolio being paid out at the time of death, or funding a pension scheme.
+LetS(x) denote the value of the exogenous funds, and letR RR(x,S(x)) be the matrix that
+contains the expected rewards to be paid out during [x,x+ dx) for the different transitions
+conditional on the value ofS(x). In general,S(u) is random, and{S(u)}u≥0is assumed to
+be a Markov process. The time–treserve is then defined as
+VVV(t,S(t)) =E
+
+
+∫ T
+t
+u∏
+t
+(III+ (MMM(v)−r(v)III)dv)RRR(u,S(u))
+T∏
+u
+(III+MMM(v)dv)du
+⏐⏐⏐⏐⏐⏐
+S(t)
+
+
+=
+∫ T
+t
+u∏
+t
+(III+ (MMM(v)−r(v)III)dv)E
+(
+RRR(u,S(u))
+⏐⏐S(t)
+)T∏
+u
+(III+MMM(v)dv)du.
+or
+VVV(t,y) =
+∫ T
+t
+u∏
+t
+(III+ (MMM(v)−r(v)III)dv)E
+(
+RRR(u,S(u))
+⏐⏐S(t) =y
+)T∏
+u
+(III+MMM(v)dv)du.
+ThenVVV(t,y) can be computed by
+T∏
+t
+
+III+
+
+ΛΛΛ(u)−rIIIE
+(
+RRR(u,S(u))
+⏐⏐S(t) =y
+)
+000 Λ ΛΛ(u)
+
+ du
+
+
+Denote the transition densities ofSby
+p(S)(t,u,x,y) =P
+(
+S(u)∈dy
+⏐⏐S(t) =x
+)
+.
+Then
+E
+(
+RRR(u,S(u))
+⏐⏐S(t) =x
+)
+=
+∫∞
+0
+RRR(u,y)p (S)(t,u,x,y)dy.
+Check with special cases, elaborate on the expectation measureQ.
+Example 6.10:Consider a unit–linked term life insurance with a guarantee for (x). We
+define a process with two states, active and dead, and the transition from active to dead will
+trigger a payment of max(S(t),G(t)) if it happens at timet<T. Then
+RRR(t,S(t)) =
+(
+−¯p(t)µx+t max(S(t),G(t))
+0 0
+)
+,
+whereµx+t denotes the mortality rate for (x) at agex+t,S(t) the stockprice at timet
+andG(t) a guarantee, which is deterministic and may be thought of as a usual lump sum
+payment. The term ¯p(t) denotes the premium rate. The premium pays for the purchase of
+the stock,S(0), and for the guaranteeG(t). Hence a fair premium function ¯p(t) is one which
+makesV(0,S(0)) = 0.
+6. THE UNIT-LINK RESERVE 109
+We must compute,
+E
+(
+RRR(u,S(u))
+⏐⏐S(t) =y
+)
+=
+
+−¯p(u)µx+uE
+(
+max(S(u),G(u))
+⏐⏐S(t) =y
+)
+0 0
+
+,
+which amount to computingE
+(
+max(S(u),G(u))
+⏐⏐S(t) =y
+)
+. We get (should be undiscounted!)
+E
+(
+max(S(u),G(u))
+⏐⏐S(t) =y
+)
+=G(u)Φ
+
+ log(G(u)/y)−(r−1
+2σ2)(u−t))√u−tσ
+
+
++ er(u−t)Φ
+
+−log(G(u)/y) + (r+1
+2σ2)(u−t))√u−tσ
+
+
+Example 6.11(Black–Scholes):Here
+S(u) =S(0)e (r−1
+2σ2)u+σW(u), W(u)∼N(0,u).
+Example 6.12:Fund protection with more than one state,
+S(u) = (X(u),max
+0≤s≤u
+X(s)).
+whereX(u) is geometric Brownian motion.
+
+Bibliographic notes
+Product integration can be consulted in [9, 7] and [12]. The particular approach taken
+in these notes is from [3]. The classical theory of SDE-driven interest rate models can be
+consulted in many textbooks. I may recommend [4]. The Markovian interest rate model
+goes at least back to [10]. In [11], a financial theory is developed for this kind of interest
+rate. The content of the current notes is taken from [2]. The development of a matrix–
+approach to reserves, higher order moments, and distributions of future payouts is from [5].
+Time–inhomogeneous semi–Markov processes was first introduced in [8]. Of more recent
+papers we mention [6], which deals with cash–flows in semi–Markov models, and [1] which
+established PDEs for reserves and higher order moments (non–matrix version).
+111
+
+Bibliography
+[1] Franck Ad´ ekambi and Marcus C Christiansen. Integral and differential equations for the moments of
+multistate models in health insurance.Scandinavian Actuarial Journal, 2017(1):29–50, 2017.
+[2] Jamaal Ahmad and Mogens Bladt. Phase-type representations of stochastic interest rates with applica-
+tions to life insurance.European Actuarial Journal, pages 1–36, 2023.
+[3] Niels Arley and Vibeke Borchsenius. On the theory of infinite systems of differential equations and their
+application to the theory of stochastic processes and the perturbation theory of quantum mechanics.
+Acta Mathematica, 76(3):261–322, 1944.
+[4] Tomas Bj¨ ork.Arbitrage Theory in Continuous Time. March 2010.
+[5] Mogens Bladt, Søren Asmussen, and Mogens Steffensen. Matrix representations of life insurance pay-
+ments.European actuarial journal, 10(1):29–67, 2020.
+[6] Kristian Buchardt, Thomas Møller, and Kristian Bjerre Schmidt. Cash flows and policyholder behaviour
+in the semi-markov life insurance setup.Scandinavian Actuarial Journal, 2015(8):660–688, 2015.
+[7] Richard D. Gill and Søren Johansen. A survey of product-integration with a view toward application
+in survival analysis.The Annals of Statistics, 18(4):1501–1555, 1990.
+[8] Jan M Hoem. Inhomogeneous semi-markov processes, select actuarial tables, and duration-dependence
+in demography. InPopulation dynamics, pages 251–296. Elsevier, 1972.
+[9] Søren Johansen. Product integrals and Markov processes.CWI Newsletter, 12:3–13, 1986.
+[10] Ragnar Norberg. A time-continuous Markov chain interest model with applications to insurance.Applied
+Stochastic Models and Data Analysis, 11(3):245–256, 1995.
+[11] Ragnar Norberg. The Markov chain market.ASTIN Bulletin, 33(2):265–287, 2003.
+[12] Anton´ ın Slav´ ık.Product integration. Its history and applications. Matfyzpress, 2007.
+113
+
+APPENDIX A
+R code for spouse model
+prodint<-function(A,s,t,n){
+x0 <- s
+y0 <- diag(nrow(A(s)))
+h<-(t-s)/n
+for(i in 1:n) {
+s1 <- h * y0%*%A(x0)
+s2 <- h * (y0 +s1/2)%*%A(x0 + h/2)
+s3 <- h * (y0 +s2/2)%*%A(x0 + h/2)
+s4 <- h * (y0 + s3)%*%A(x0 + h)
+y0 <- y0 + s1/6 + s2/3 + s3/3+ s4/6
+x0 <- x0 + h
+}
+return(y0)
+}
+Lambda<-function(x){
+A<-matrix(0,4,4)
+A[1,2]<- 0.0005+10ˆ(5.728+0.038*(x+6)-10)
+A[1,3]<- 0.0005+10ˆ(5.88+0.038*x-10)
+A[2,4]<- 0.0005+10ˆ(5.88+0.038*x-10)
+A[3,4]<- 0.0005+10ˆ(5.728+0.038*(x+6)-10)
+evec<-rep(1,4)
+dsum<-as.vector(A%*%evec)
+return(A-diag(dsum))
+}
+R<-function(x,mu){
+if(x<=70){
+return(diag(c(-mu,-mu,0,0)))
+}
+else{
+return(diag(c(1.2,1.2,1.2,0)))
+}
+}
+dR<-function(x,mu){
+if(x<=70){
+return(diag(c(-1,-1,0,0)))
+115
+116 A. R CODE FOR SPOUSE MODEL
+}
+else{
+return(diag(c(0,0,0,0)))
+}
+}
+reserve<-function(t,TT,Lambda,R,mu,rint,N){
+dim<-nrow(Lambda(t))
+A11<-function(x){
+return(Lambda(x)-rint*diag(1,nrow=dim))
+}
+RM<-function(x){
+cbind(rbind(A11(x),matrix(0,dim,dim)),rbind(R(x,mu),Lambda(x)))
+}
+PRM<-prodint(RM,t,TT,N)
+RES<-PRM[1:dim,(dim+1):(2*dim)]
+return((RES%*%rep(1,dim))[1])
+}
+equiv_premium<-function(t,TT,Lambda,R,dR,mu,rint,numsteps){
+b=reserve(t,TT,Lambda,R,0.0,rint,numsteps)
+a=reserve(t,TT,Lambda,dR,0.0,rint,numsteps)
+return(-b/a)
+}
+equiv_premium(50,100,Lambda,R,dR,0.0,0.01,5000)
+R1<-function(x,mu){
+if(x<=70){
+return(diag(c(-1.2,-1.2,0,0)))
+}
+else{
+return(diag(c(mu,mu,mu,0)))
+}
+}
+dR1<-function(x,mu){
+if(x<=70){
+return(diag(c(0,0,0,0)))
+}
+else{
+return(diag(c(1,1,1,0)))
+}
+}
+equiv_premium(50,100,Lambda,R1,dR1,0.0,0.01,5000)
+APPENDIX B
+A short guide to fitting Markovian interest rate models
+PH fitting to weighted data works in the following way. We use the library matrixdist in R.
+Once installed, this is invoked by
+library(matrixdist)
+In the matrixdist package one may then create an object which is of phase–type by the
+command
+ph(structure="general",dimension=dim)
+This generates an random ph representation, which we may see how it looks like by
+myph<-ph(structure="general",dimension=dim)
+myph
+Here “general” simply refers to a general phase–time structure, as opposed to sub–structures
+like e.g. Coxian, which would be then be set by “coxian” .
+Fitting to data is now a simple matter. Datax 1,...,xn, which may e.g. be read from a file,
+are stored in an array, say called data. Then the command “fit” can be used to perform a
+number of iterations in an EM algorithm, which converges towards to maximum likelihood
+estimate of its parameters. The following commands reads data, defines a five–dimensional
+phase–type object, and performs 1000 EM–iterations in a five dimensional phase–type setting
+with initial parameters given by ph5:
+data<-scan(file="path-to-data/data.dat")
+ph5<-ph(structure="general",dimension=5)
+fit5 <- fit(ph5,y=data,stepsEM=1000)
+The result, “fit5” is again a phase–type object, which may be refitted if another e.g. 2000
+iterations are needed:
+fit5 <- fit(fit5,y=data,stepsEM=2000)
+One may also fit to weighted data. If a data point appearsnof times, it may be defined as
+a weighted data point with weightn. The weight need to be an integer value,. This acutally
+allows us to fit to a histogram or theoretical distribution instead.
+For a given theoretical distribution functionF, choose a finite range [a,b] and subdivide it
+into small intervals [yi,yi+1],i= 1,2,...,m−1. Letxi be the midpoint of the small intervals,
+117
+118 B. A SHORT GUIDE TO FITTING MARKOVIAN INTEREST RATE MODELS
+xi = (yi +yi+1)/2. Then we may consider thex i’s as weighted data with weightsF(y i+1)−
+F(yi). In particular, the latter method applied to bond prices (which behaves like a survival
+function).
+Weighted data are fitted in the following way:
+fit5<-fit(ph,y=data,weight=weights,stepsEM=1000)
+Here “data” is an array containing the data points while “weights” is an array containing
+the corresponding weights. Hence they are of the same size.
+We have assume a finite interval until now for the support ofF. This may no be satisfactory
+if the remaining tail probability from the lastx n onwards is still large. This is often the
+case for bonds. In this case if would be better to treatb, the last interval limit, as a right
+censored data point. This can be handled in the following way:
+fit(ph,y=uncens,weight=wuncens,rcen=cens,rcenweight=wcens,stepsEM=1000)
+Here “ucens” is an array which contains thex i’s midpoints of the intervals, “wuncens” an
+array of the same size containing the wights, “rcens” an array (in this case of one point only)
+containing the cut–off of our support, and “wcens” an array of the same size as rcens which
+contains the remaning tail probability.
+Once fitted, the fitted distribution can be visualized by accessing e.g the density or distri-
+bution functions by the commands
+dens(fit5, seq(0,10, 0.01))
+cdf(fit5, seq(0,10, 0.01))
+where “seq(0,10, 0.01)” defines a range over 0 to 10 with steplengths 0.01 in which the
+functions are evaluated. One may e.g. plot the fitted density against a histogram using
+hist(data,probability = T)
+lines(seq(0,10, 0.01),dens(fit5, seq(0,10, 0.01)))
+Regarding fitting to bond prices, we need to plot prices against the survival function of the
+fit. Assume that the bond prices are contained in the array “bond” with corresponding
+maturities in “mat” . Then
+plot(mat,bond,ylab="Bond␣price",xlab="Maturity")
+lines(seq(0,300, 0.1), 1-cdf(ph10, seq(0,300, 0.1)))
+plots the fitted ph distribution to bond prices in terms of its survival function. The exit rate
+vector contains the estimated interest rates used in order to achieve the fit.
+If one prefers to use pre–specified interest rates, specified in the vectorr rr= (r 1,...,rp), then
+one can replace the exit rate vector in each step of the EM algorithm byr rrinstead. The is
+achieved by replacing the intensity matrixTTTobtained in an EM step by
+TTT+ ∆∆∆(ttt)−∆∆∆(rrr),
+B. A SHORT GUIDE TO FITTING MARKOVIAN INTEREST RATE MODELS 119
+wheretttis the estimated exit rate vector. In R language:
+for(i in 1:1000){
+ph <- fit(ph,y=uncens,weight=wuncens,rcen=cens,rcenweight=wcens,stepsEM=1)
+exit <- -rowSums(ph@pars$S)
+ph@pars$S <- ph@pars$S + diag(exit)-diag(r)
+}
+}
+The command “ph@pars$S” pulls the intensity matrix out of the phase–type object “ph” .

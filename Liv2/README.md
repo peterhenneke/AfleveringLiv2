@@ -1,0 +1,1 @@
+# Liv2: Life Insurance Mathematics 2\n\nThis folder contains notes, concepts, and Jupyter notebooks focusing on actuarial mathematics (Liv2).\n
