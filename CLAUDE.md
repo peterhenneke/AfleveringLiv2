@@ -2,12 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-<!-- AUTO-SYNCED by sync_agents.py — edit here or in .agents/rules/; changes sync on git commit -->
-
 <!-- BEGIN: .agents/rules/docker.md -->
 # File Editing vs Execution
 - **Reading and editing existing files** (Read, Edit tools): Do these directly on the host — no Docker needed.
-- **Creating new files**: MUST go through the Docker sandbox. Use the Bash tool with `docker compose run --rm sandbox bash -c "cat > //workspace/path/to/file << 'EOF'\n...\nEOF"` or write content via a heredoc through Docker. **NEVER use the Write tool to create files** — it runs on the host and bypasses the sandbox.
+- **Creating new files**: MUST go through the Docker sandbox. **NEVER use the Write tool to create files** — it runs on the host and bypasses the sandbox.
+  - **Recommended pattern for files with complex content**: (1) Create a stub file via Docker: `docker compose run --rm sandbox bash -c "echo '# stub' > //workspace/path/to/file"`, then (2) use the Edit tool on the host to fill in the content (editing existing files on the host is allowed). This avoids bash heredoc escaping issues that are common in Git Bash on Windows.
+  - **For short/simple files**: Use `docker compose run --rm sandbox bash -c "cat > //workspace/path/to/file << 'EOF'\n...\nEOF"` or write content via a heredoc through Docker.
 - **Deleting files**: MUST go through the Docker sandbox (already documented under Cleanup below).
 - **Executing code** (running scripts, R, Python, shell commands): ALL execution MUST go through the Docker sandbox as described below.
 

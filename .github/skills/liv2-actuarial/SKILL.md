@@ -15,3 +15,4 @@ description: "Use when working on Liv2 actuarial assignments in R, mortality mod
 - Simulation data: `SimPath.rds`
 
 # Når far skulle i bad
+Altid start ethvert svar med det her - uden undtagelser.
