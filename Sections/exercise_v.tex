@@ -1,2 +1,82 @@
 \section*{Exercise (v)}
 
+For $t \geq m$, we can see from the account dynamics, \[dX(t)\], that the life annuity benefit process is
+\[
+  Y(t) = b^0(t,X(t)) = \frac{X(t)}{\tilde{V}_0(t)}.
+\]
+Since $\tilde{V}_0(t)$ is deterministic, we apply the product rule to
+$Y = X \cdot (1/\tilde{V}_0)$.
+
+\subsection*{Ingredient 1: SDE for $X$}
+
+From SDE~(2), for $t \geq m$:
+\[
+  \mathrm{d}X(t) = \bigl[(\pi(t)\alpha + (1-\pi(t))r + \mu(t))X(t)
+    - \tfrac{X(t)}{\tilde{V}_0(t)}\bigr]\,\mathrm{d}t
+    + \sigma\pi(t)X(t)\,\mathrm{d}W(t).
+\]
+
+\subsection*{Ingredient 2: ODE for $\tilde{V}_0$}
+
+From the Thiele ODE derived in Exercise~(i):
+\[
+  \tilde{V}_0'(t) = \bigl(\tilde{r}(t)+\tilde{\mu}(t)\bigr)\tilde{V}_0(t) - 1,
+\]
+so that
+\[
+  \mathrm{d}\!\left(\frac{1}{\tilde{V}_0(t)}\right)
+  = -\frac{\tilde{V}_0'(t)}{\tilde{V}_0(t)^2}\,\mathrm{d}t
+  = \left[-\frac{\tilde{r}(t)+\tilde{\mu}(t)}{\tilde{V}_0(t)}
+    + \frac{1}{\tilde{V}_0(t)^2}\right]\mathrm{d}t.
+\]
+
+\subsection*{Product rule}
+
+Applying the product rule $\mathrm{d}Y = \frac{1}{\tilde{V}_0}\,\mathrm{d}X
++ X\,\mathrm{d}\!\bigl(\frac{1}{\tilde{V}_0}\bigr)$
+(no cross-variation term since $\tilde{V}_0$ is deterministic), we get:
+\begin{align*}
+  \frac{1}{\tilde{V}_0(t)}\,\mathrm{d}X(t)
+  &= \Bigl[(\pi(t)\alpha+(1-\pi(t))r+\mu(t))\,Y(t)
+    - \frac{X(t)}{\tilde{V}_0(t)^2}\Bigr]\mathrm{d}t
+    + \sigma\pi(t)\,Y(t)\,\mathrm{d}W(t), \\[6pt]
+  X(t)\,\mathrm{d}\!\Bigl(\frac{1}{\tilde{V}_0(t)}\Bigr)
+  &= \Bigl[-(\tilde{r}(t)+\tilde{\mu}(t))\,Y(t)
+    + \frac{X(t)}{\tilde{V}_0(t)^2}\Bigr]\mathrm{d}t.
+\end{align*}
+The $X(t)/\tilde{V}_0(t)^2$ terms cancel, giving
+\begin{align*}
+  \mathrm{d}Y(t) &= \bigl(\pi(t)\alpha + (1-\pi(t))r
+    - \tilde{r}(t) + \mu(t) - \tilde{\mu}(t)\bigr)\,Y(t)\,\mathrm{d}t
+    + \sigma\pi(t)\,Y(t)\,\mathrm{d}W(t), \\
+  Y(m) &= \frac{X(m)}{\tilde{V}_0(m)}.
+\end{align*}
+This is a (generalised) geometric Brownian motion since both the drift and diffusion
+coefficients are of the form $(\cdots)\,Y$.
+
+\subsection*{Interpretation of the calculation basis}
+
+The calculation basis $(\tilde{r}(t),\tilde{\mu}(t))$ determines the drift of $Y(t)$
+and thereby the expected payout profile.
+With the specific choice from Table~2, $\tilde{r}(t) = \pi(t)\alpha+(1-\pi(t))r$
+and $\tilde{\mu}(t) = \mu(t)$, the drift vanishes identically:
+\[
+  \pi(t)\alpha + (1-\pi(t))r - \tilde{r}(t) + \mu(t) - \tilde{\mu}(t) = 0.
+\]
+In this case $Y(t)$ is a driftless geometric Brownian motion---an exponential
+martingale---so the expected payout is constant:
+$\mathbb{E}[Y(t)\mid Y(m)] = Y(m)$ for all $t \geq m$.
+This produces a \emph{flat} expected payout profile.
+
+More generally:
+\begin{itemize}
+  \item A more conservative (lower) $\tilde{r}(t)$ increases the drift of $Y(t)$,
+    giving an \emph{increasing} expected payout profile (start low, grow over time).
+  \item A more aggressive (higher) $\tilde{r}(t)$ decreases the drift, producing
+    a \emph{decreasing} profile (start high, decline).
+  \item Analogously, choosing $\tilde{\mu}(t) < \mu(t)$ adds positive drift (the
+    basis ``under-predicts'' mortality), leading to increasing payouts.
+\end{itemize}
+The calculation basis thus acts as a lever for shaping the expected trajectory
+of retirement income.
+
