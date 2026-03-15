@@ -161,3 +161,82 @@ simulated_path$Account_Value
 
 simulated_path %>%
   filter(Time == 70)
+
+# Exercise (vi)
+
+# Get X(m) from the simulated path
+X_m <- simulated_path %>% filter(Time == m) %>% pull(Account_Value)
+
+# Initial value Y(m) = X(m) / V_tilde_0(m)
+Y_m <- X_m / V_func(m)
+
+# Simulate N=1000 paths of Y(t) via Euler scheme
+simulate_annuity_paths <- function(Y_init, t_start = m, t_end = 111,
+                                    h = 1/100, N = 1000) {
+  t_seq <- seq(t_start, t_end, by = h)
+  M <- length(t_seq)
+
+  # Matrix: each row is a path, each column is a time point
+  Y_mat <- matrix(0, nrow = N, ncol = M)
+  Y_mat[, 1] <- Y_init
+
+  # Pre-generate all random normals
+  Z <- matrix(rnorm(N * (M - 1)), nrow = N, ncol = M - 1)
+
+  for (i in 1:(M - 1)) {
+    t <- t_seq[i]
+    pi_val <- pi_t(t)
+    r_tilde_val <- pi_val * alpha + (1 - pi_val) * r
+    mu_val <- mu_t(t)
+    mu_tilde_val <- mu_val
+
+    drift_coef <- pi_val * alpha + (1 - pi_val) * r - r_tilde_val + mu_val - mu_tilde_val
+    diff_coef <- sigma * pi_val
+
+    Y_mat[, i + 1] <- Y_mat[, i] + drift_coef * Y_mat[, i] * h +
+      diff_coef * Y_mat[, i] * sqrt(h) * Z[, i]
+  }
+
+  list(t_seq = t_seq, Y_mat = Y_mat)
+}
+
+set.seed(42)
+annuity_sim <- simulate_annuity_paths(Y_init = Y_m)
+
+# Plot a selection of sample paths for exercise (vi)
+n_show <- 15
+sample_paths_df <- do.call(rbind, lapply(1:n_show, function(j) {
+  tibble(Time = annuity_sim$t_seq,
+         Y = annuity_sim$Y_mat[j, ] / 1000,
+         Path = as.factor(j))
+}))
+
+p_vi <- sample_paths_df %>%
+  ggplot(aes(x = Time, y = Y, colour = Path)) +
+  geom_line(alpha = 0.6) +
+  geom_hline(yintercept = Y_m / 1000, linetype = "dashed") +
+  scale_x_continuous(breaks = seq(70, 110, 10)) +
+  xlab("Age") +
+  ylab("Life annuity benefit Y(t) (thousands)") +
+  theme(legend.position = "none")
+
+ggsave("Pictures/AnnuitySamplePaths.png", p_vi, width = 7, height = 4.5, dpi = 300)
+
+# Exercise (vii)
+
+# Compute expected Y(t) across all N paths
+E_Y <- colMeans(annuity_sim$Y_mat)
+
+expected_df <- tibble(Time = annuity_sim$t_seq, E_Y = E_Y / 1000)
+
+p_vii <- expected_df %>%
+  ggplot(aes(x = Time, y = E_Y)) +
+  geom_line(size = 1.1) +
+  geom_hline(yintercept = Y_m / 1000, linetype = "dashed", colour = "red") +
+  scale_x_continuous(breaks = seq(70, 110, 10)) +
+  xlab("Age") +
+  ylab("Expected life annuity benefit (thousands)") +
+  annotate("text", x = 100, y = Y_m / 1000 * 1.03,
+           label = "Y(m)", colour = "red")
+
+ggsave("Pictures/ExpectedAnnuity.png", p_vii, width = 7, height = 4.5, dpi = 300)

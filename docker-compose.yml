@@ -1,0 +1,15 @@
+services:
+  sandbox:
+    build: .
+    # Mount only the Liv2 workspace — nothing else on your PC is accessible
+    volumes:
+      - .:/workspace
+    # Resource limits — prevent runaway agent processes
+    mem_limit: 4g
+    cpus: "4.0"
+    # No internet by default — comment out if you need pip installs inside container
+    network_mode: none
+    stdin_open: true
+    tty: true
+    # Run as the non-root sandbox user
+    user: sandbox
