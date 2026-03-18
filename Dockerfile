@@ -59,6 +59,7 @@ RUN pip install --no-cache-dir \
 # --- Extra R packages (appended for cache efficiency) ---
 RUN install2.r --error --skipinstalled evd
 RUN install2.r --error --skipinstalled mvtnorm QRM
+RUN install2.r --error --skipinstalled latex2exp
 
 # --- Switch to the non-root sandbox user ---
 USER sandbox
