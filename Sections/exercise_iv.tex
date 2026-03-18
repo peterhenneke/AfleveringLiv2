@@ -1,118 +1,87 @@
 \section*{Exercise (iv)}
 
-We argue that $V^0(t,x) = x$ by verification: we show that $V^0(t,x) = x$ satisfies
-Thiele's partial differential equation (PDE) in both phases with the correct terminal
-boundary condition, and conclude by uniqueness.
+Assuming $V^0(t,x) = x$ and then showing that the two PDEs coincide we have shown $V^0(t,x) = x$.
 
-\subsection*{Thiele's PDE}
-
-The market reserve $V^0(t,x)$ is defined as the expected discounted future net outflows,
-\[
-  V^0(t,x) = \mathbb{E}^{\mathbb{P}\otimes\mathbb{Q}}\!\left[
-    \int_t^{111} e^{-\int_t^s (\tilde{r}(v)+\mu(v))\,dv}\, c(s,X(s))\,ds
-    \;\Big|\; X(t)=x,Z(t)=0
-  \right].
-\]
-By the Feynman--Kac theorem---equivalently, by applying It\^{o}'s formula to the
-discounted process $e^{-\int_0^t(\tilde{r}+\mu)\,ds}V^0(t,X(t))$ and requiring its
-drift to equal the outflow rate---$V^0(t,x)$ satisfies Thiele's PDE
-\begin{equation}\label{eq:thiele_pde}
-  \frac{\partial V^0}{\partial t}
-  + a(t,x)\,\frac{\partial V^0}{\partial x}
-  + \tfrac{1}{2}\,b(t,x)^2\,\frac{\partial^2 V^0}{\partial x^2}
-  = \bigl(\tilde{r}(t)+\mu(t)\bigr)V^0 - c(t,x),
+From Proposition~3.3, assuming $V^0(t,x)$ is sufficiently differentiable and conditioning
+on $j=0$, the market reserve satisfies the PDE
+\begin{equation}\label{eq:prop33_pde}
+  V_t^0(t, x) = rV^0(t, x) - b^0(t, x) - \mu(t)R^{01}(t, x) - \mathcal{D}_x V^0(t, x),
 \end{equation}
-where $a(t,x)$ and $b(t,x)$ are the drift and diffusion of $X$, and $c(t,x)$ is
-the net outflow rate (benefits minus premiums).
-
-\subsection*{Derivatives of $V^0(t,x) = x$}
-
-We conjecture $V^0(t,x) = x$ and compute its partial derivatives:
+where $V^1(t,x) \equiv 0$, yielding
 \[
-  \frac{\partial V^0}{\partial t} = 0,
-  \qquad
-  \frac{\partial V^0}{\partial x} = 1,
-  \qquad
-  \frac{\partial^2 V^0}{\partial x^2} = 0.
+  R^{01}(t, x) = b^{01}(t, x) - V^0(t, x),
 \]
-Substituting into~\eqref{eq:thiele_pde}, the PDE reduces to verifying
-\begin{equation}\label{eq:thiele_reduced}
-  a(t,x) = \bigl(\tilde{r}(t)+\mu(t)\bigr)x - c(t,x).
-\end{equation}
-
-\subsection*{Retirement phase, $t \in [m, 111]$}
-
-From SDE~(2), the drift coefficient is
+and the operator $\mathcal{D}_x$ is given by
 \[
-  a(t,x) = \bigl(\tilde{r}(t)+\mu(t)\bigr)x - \frac{x}{\tilde{V}^0(t)},
+  \mathcal{D}_x V^0(t, x) = V_x^0(t, x) (rx - a^0(t,x) - \mu(t)\varrho^{01}(t,x)) + \frac{1}{2}V_{xx}^0(t, x)\pi^2(t, x)\sigma^2 x^2,
 \]
-There is no death benefit during retirement (the account is released to the
-pool on death), so the net outflow rate consists solely of the annuity payout,
-$c(t,x)=x/\tilde{V}^0(t)$.
+Note in our case: $\varrho^{01}(t,x) = a^{01}(t,x) - x$.
+\\
+\\
+Since the contract features no discrete jumps in benefits or account balance, the jump condition (3.7b) is satisfied.
+\\
+\\
+For $V^0(t,x) = x$ we find the derivatives.
+\[
+  V_t^0 = 0, \qquad V_x^0 = 1, \qquad V_{xx}^0 = 0.
+\]
+Substituting these into the operator yields $\mathcal{D}_x V^0(t, x) =  rx - a^0(t,x) - \mu(t)\varrho^{01}(t,x)$ and $R^{01}(t,x) = b^{01}(t,x) - x$. 
+The PDE~\eqref{eq:prop33_pde} thus simplifies to:
 
-We need to verify~\eqref{eq:thiele_reduced}, i.e.\ that
-$a(t,x) = \bigl(\tilde{r}+\mu\bigr)x - c(t,x)$.
-Equivalently, we show that the left-hand side minus the right-hand side
-is zero:
 \begin{align*}
-  &a(t,x) - \bigl(\tilde{r}+\mu\bigr)x + c(t,x) \\[4pt]
-  %% Step 1: insert expressions for a and c
-  &= \Bigl[\bigl(\tilde{r}+\mu\bigr)x
-     - \frac{x}{\tilde{V}^0(t)}\Bigr]
-     - \bigl(\tilde{r}+\mu\bigr)x
-     + \frac{x}{\tilde{V}^0(t)} \\[4pt]
-  &= 0. \quad\checkmark
+  V_t^0(t, x) &= rV^0(t, x)-rx = r(x-x) = 0.
 \end{align*}
+
+
 
 \subsection*{Active phase, $t \in [30, m)$}
 
-From SDE~(1), the drift is
+During the active phase, premiums are paid at rate $\theta L(t)$ (a negative benefit) and the death benefit is $K L(t)$. Thus, the actual contractual benefits are:
 \[
-  a(t,x) = \tilde{r}(t)\,x + \theta L(t) - \mu(t)\bigl(KL(t)-x\bigr)
+  b^0(t,x) = -\theta L(t), \qquad b^{01}(t,x) = K L(t).
 \]
-During the active phase the policyholder pays premiums at rate $\theta L(t)$
-(an inflow to the insurer) and the insurer pays death benefits at expected
-rate $\mu(t)\,KL(t)$.
-The net outflow rate is therefore
+From SDE~(1), substituting the physical expected return $\tilde{r}(t)$ with the risk-free rate $r$, the risk-neutral drift of the account is
 \[
-  c(t,x) = \mu(t)\,KL(t) - \theta L(t).
+  A(t,x) = r\,x + \theta L(t) - \mu(t)\bigl(KL(t)-x\bigr).
 \]
-
-We verify~\eqref{eq:thiele_reduced} in the same way as above:
+We verify~\eqref{eq:thiele_reduced} by evaluating the right-hand side:
 \begin{align*}
-  &a(t,x) - \bigl(\tilde{r}+\mu\bigr)x + c(t,x) \\[4pt]
-  %% Step 1: insert expressions for a and c
-  &= \bigl[(\tilde{r}+\mu)x + \theta L - \mu KL\bigr]
-     - (\tilde{r}+\mu)x
-     + \bigl[\mu KL - \theta L\bigr] \\[4pt]
-  &= 0. \quad\checkmark
+  r x - b^0(t,x) - \mu(t)\bigl(b^{01}(t,x) - x\bigr) 
+  &= r x - \bigl(-\theta L(t)\bigr) - \mu(t)\bigl(K L(t) - x\bigr) \\
+  &= r x + \theta L(t) - \mu(t)\bigl(K L(t) - x\bigr) \\
+  &= A(t,x). \quad\checkmark
+\end{align*}
+
+\subsection*{Retirement phase, $t \in [m, 111]$}
+
+During retirement, the account pays a continuous annuity rate $x / \tilde{V}^0(t)$, and the account is forfeited to the mutual pool upon death (no death benefit). Thus:
+\[
+  b^0(t,x) = \frac{x}{\tilde{V}^0(t)}, \qquad b^{01}(t,x) = 0.
+\]
+From SDE~(2), the account growth includes a survivorship dividend $\mu(t)x$ from the mortality pool. Changing $\tilde{r}(t)$ to $r$, the risk-neutral drift is
+\[
+  A(t,x) = \bigl(r+\mu(t)\bigr)x - \frac{x}{\tilde{V}^0(t)}.
+\]
+We verify~\eqref{eq:thiele_reduced} by evaluating the right-hand side:
+\begin{align*}
+  r x - b^0(t,x) - \mu(t)\bigl(b^{01}(t,x) - x\bigr) 
+  &= r x - \frac{x}{\tilde{V}^0(t)} - \mu(t)\bigl(0 - x\bigr) \\
+  &= r x - \frac{x}{\tilde{V}^0(t)} + \mu(t) x \\
+  &= \bigl(r+\mu(t)\bigr)x - \frac{x}{\tilde{V}^0(t)} \\
+  &= A(t,x). \quad\checkmark
 \end{align*}
 
 \subsection*{Boundary condition}
 
-At the terminal age $t=111$ there are no future obligations, so the
-boundary condition is $V^0(111,x) = 0$.
-If $V^0(t,x) = x$, this requires $X(111) = 0$.
-This is guaranteed by construction of the calculation basis:
-the reserve $\tilde{V}^0(t)$ computed in Exercise~(i) satisfies
-$\tilde{V}^0(111)=0$, so the annuity payout rate
-$X(t)/\tilde{V}^0(t) \to \infty$ as $t\to 111$, which drains the
-account completely.
-In other words, the purpose of $\tilde{V}^0$ is precisely to calibrate
-the payout rate so that the account is exhausted at the maximum age.
-The simulation from Exercise~(ii) confirms this numerically:
-$X(111)\approx 0$.
+At the terminal age $n=111$ there are no future obligations, so equation (3.7c) requires the boundary condition $V^0(111,x) = 0$. If $V^0(t,x) = x$, this means we need $X(111) = 0$.
+
+This is guaranteed by the construction of the calculation basis: the reserve $\tilde{V}^0(t)$ computed in Exercise~(i) satisfies $\tilde{V}^0(111)=0$. Thus, the annuity payout rate $X(t)/\tilde{V}^0(t) \to \infty$ as $t\to 111$, which drains the account completely. The purpose of $\tilde{V}^0$ is precisely to calibrate the payout rate so that the account is exhausted at the maximum age. The simulation from Exercise~(ii) confirms this numerically: $X(111)\approx 0$, thereby satisfying (3.7c).
 
 \subsection*{Conclusion}
 
-Since $V^0(t,x)=x$ satisfies Thiele's PDE~\eqref{eq:thiele_pde} in both phases and
-matches the terminal boundary condition, uniqueness of the solution gives
+Proposition~3.3 states that, conversely, if there exists a set of functions $V^j(t,x)$ such that conditions (3.7) hold, then the function is indeed equal to the reserve. By explicitly verifying that $V^0(t,x)=x$ satisfies the PDE (3.7a) in both phases, the trivial jump condition (3.7b), and the terminal condition (3.7c), we conclude that
 \[
   \boxed{V^0(t,x) = x.}
 \]
-The market reserve equals the account value. This is the defining property of a
-unit-link product: the policyholder bears all investment risk, and the account
-dynamics are constructed to continuously budget for every mortality and benefit cash
-flow, making the account the exact self-financing replicating portfolio for all
-future obligations.
+The market reserve equals the account value. This is the defining property of a unit-link product: the policyholder bears all investment risk, and the account dynamics are constructed to continuously budget for every mortality and benefit cash flow, making the account the exact self-financing replicating portfolio for all future obligations.
 
