@@ -1,87 +1,54 @@
 \section*{Exercise (iv)}
 
-Assuming $V^0(t,x) = x$ and then showing that the two PDEs coincide we have shown $V^0(t,x) = x$.
+We assume $V^0(t,x) = x$ and then show $V^0(t,x)$ satisfies the PDE from Proposition~3.3.
+\\
+\\
+According to Proposition~3.3, assuming $V^0(t,x)$ is sufficiently differentiable and $V^1 \equiv 0$, the market reserve must satisfy three conditions:
+\begin{align}
+  V_t^0(t, x) & = rV^0(t, x) - b^0(t, x) - \mu(t)R^{01}(t, x) - \mathcal{D}_x V^0(t, x) \\
+  V^0(t-, x)  & = \Delta B^0(t,x) + V^0\bigl(t, x - \Delta A^0(t,x)\bigr)               \\
+  V^0(n, x)   & = 0
+\end{align}
 
-From Proposition~3.3, assuming $V^0(t,x)$ is sufficiently differentiable and conditioning
-on $j=0$, the market reserve satisfies the PDE
-\begin{equation}\label{eq:prop33_pde}
-  V_t^0(t, x) = rV^0(t, x) - b^0(t, x) - \mu(t)R^{01}(t, x) - \mathcal{D}_x V^0(t, x),
-\end{equation}
-where $V^1(t,x) \equiv 0$, yielding
+We start by verifying the simplest conditions for $V^0(t,x) = x$.
+\\
+\\
+For (2): Since the contract features no discrete jumps in benefits or account balance, $\Delta B^0 = \Delta A^0 = 0$. The condition trivially reduces to $x = x$, which is satisfied.
+\\
+\\
+For (3): At the terminal age $n=111$, the basis reserve computed in Exercise~(i) satisfies $\tilde{V}^0(111)=0$. This forces the annuity payout rate $X(t)/\tilde{V}^0(t) \to \infty$, draining the account so that $X(111) = 0$. Thus, $V^0(111,0) = 0$, satisfying the terminal condition.
+\\
+\\
+For (1): As a candidate for the reserve, let $V^0(t,x) = x$. We calculate its partial derivatives:
 \[
-  R^{01}(t, x) = b^{01}(t, x) - V^0(t, x),
+  V_t^0(t, x) = 0, \qquad V_x^0(t, x) = 1, \qquad V_{xx}^0(t, x) = 0.
 \]
-and the operator $\mathcal{D}_x$ is given by
-\[
-  \mathcal{D}_x V^0(t, x) = V_x^0(t, x) (rx - a^0(t,x) - \mu(t)\varrho^{01}(t,x)) + \frac{1}{2}V_{xx}^0(t, x)\pi^2(t, x)\sigma^2 x^2,
-\]
-Note in our case: $\varrho^{01}(t,x) = a^{01}(t,x) - x$.
-\\
-\\
-Since the contract features no discrete jumps in benefits or account balance, the jump condition (3.7b) is satisfied.
-\\
-\\
-For $V^0(t,x) = x$ we find the derivatives.
-\[
-  V_t^0 = 0, \qquad V_x^0 = 1, \qquad V_{xx}^0 = 0.
-\]
-Substituting these into the operator yields $\mathcal{D}_x V^0(t, x) =  rx - a^0(t,x) - \mu(t)\varrho^{01}(t,x)$ and $R^{01}(t,x) = b^{01}(t,x) - x$. 
-The PDE~\eqref{eq:prop33_pde} thus simplifies to:
 
+$\hspace{0.5cm}$
+
+Substituting these derivatives into $\mathcal{D}_x V^0(t, x)$ yields:
 \begin{align*}
-  V_t^0(t, x) &= rV^0(t, x)-rx = r(x-x) = 0.
+  \mathcal{D}_x V^0(t, x) & = V_x^0(t, x) \bigl(rx - a^0(t,x) - \mu(t)\varrho^{01}(t,x)\bigr) + \frac{1}{2}V_{xx}^0(t, x)\pi^2(t, x)\sigma^2 x^2 \\
+                          & = 1 \cdot \bigl(rx - a^0(t,x) - \mu(t)\varrho^{01}(t,x)\bigr) + 0                                                    \\
+                          & = rx - a^0(t,x) - \mu(t)\varrho^{01}(t,x).
+\end{align*}
+Furthermore, the sum at risk is $R^{01}(t,x) = b^{01}(t,x) - x$.
+
+By the definition of a unit-linked contract, the account perfectly matches the benefits:
+\[
+  a^0(t,x) = b^0(t,x) \quad \text{and} \quad a^{01}(t,x) = b^{01}(t,x).
+\]
+Consequently, since the account terminates upon death, the internal account value jumps to $\chi^1(t,x) = 0$. The total account jump upon death therefore exactly matches the sum at risk:
+\[
+  \varrho^{01}(t,x) = a^{01}(t,x) + \chi^1(t,x) - x = b^{01}(t,x) + 0 - x = R^{01}(t,x).
+\]
+
+Inserting these equivalences into the right-hand side of (1), it simplifies analytically to zero:
+\begin{align*}
+  V_t^0(t,x) & = r x - b^0(t,x) - \mu(t) R^{01}(t, x) - \mathcal{D}_x V^0(t, x)                                     \\
+             & = r x - a^0(t,x) - \mu(t) \varrho^{01}(t, x) - \bigl(rx - a^0(t,x) - \mu(t) \varrho^{01}(t, x)\bigr) \\
+             & = 0.
 \end{align*}
 
-
-
-\subsection*{Active phase, $t \in [30, m)$}
-
-During the active phase, premiums are paid at rate $\theta L(t)$ (a negative benefit) and the death benefit is $K L(t)$. Thus, the actual contractual benefits are:
-\[
-  b^0(t,x) = -\theta L(t), \qquad b^{01}(t,x) = K L(t).
-\]
-From SDE~(1), substituting the physical expected return $\tilde{r}(t)$ with the risk-free rate $r$, the risk-neutral drift of the account is
-\[
-  A(t,x) = r\,x + \theta L(t) - \mu(t)\bigl(KL(t)-x\bigr).
-\]
-We verify~\eqref{eq:thiele_reduced} by evaluating the right-hand side:
-\begin{align*}
-  r x - b^0(t,x) - \mu(t)\bigl(b^{01}(t,x) - x\bigr) 
-  &= r x - \bigl(-\theta L(t)\bigr) - \mu(t)\bigl(K L(t) - x\bigr) \\
-  &= r x + \theta L(t) - \mu(t)\bigl(K L(t) - x\bigr) \\
-  &= A(t,x). \quad\checkmark
-\end{align*}
-
-\subsection*{Retirement phase, $t \in [m, 111]$}
-
-During retirement, the account pays a continuous annuity rate $x / \tilde{V}^0(t)$, and the account is forfeited to the mutual pool upon death (no death benefit). Thus:
-\[
-  b^0(t,x) = \frac{x}{\tilde{V}^0(t)}, \qquad b^{01}(t,x) = 0.
-\]
-From SDE~(2), the account growth includes a survivorship dividend $\mu(t)x$ from the mortality pool. Changing $\tilde{r}(t)$ to $r$, the risk-neutral drift is
-\[
-  A(t,x) = \bigl(r+\mu(t)\bigr)x - \frac{x}{\tilde{V}^0(t)}.
-\]
-We verify~\eqref{eq:thiele_reduced} by evaluating the right-hand side:
-\begin{align*}
-  r x - b^0(t,x) - \mu(t)\bigl(b^{01}(t,x) - x\bigr) 
-  &= r x - \frac{x}{\tilde{V}^0(t)} - \mu(t)\bigl(0 - x\bigr) \\
-  &= r x - \frac{x}{\tilde{V}^0(t)} + \mu(t) x \\
-  &= \bigl(r+\mu(t)\bigr)x - \frac{x}{\tilde{V}^0(t)} \\
-  &= A(t,x). \quad\checkmark
-\end{align*}
-
-\subsection*{Boundary condition}
-
-At the terminal age $n=111$ there are no future obligations, so equation (3.7c) requires the boundary condition $V^0(111,x) = 0$. If $V^0(t,x) = x$, this means we need $X(111) = 0$.
-
-This is guaranteed by the construction of the calculation basis: the reserve $\tilde{V}^0(t)$ computed in Exercise~(i) satisfies $\tilde{V}^0(111)=0$. Thus, the annuity payout rate $X(t)/\tilde{V}^0(t) \to \infty$ as $t\to 111$, which drains the account completely. The purpose of $\tilde{V}^0$ is precisely to calibrate the payout rate so that the account is exhausted at the maximum age. The simulation from Exercise~(ii) confirms this numerically: $X(111)\approx 0$, thereby satisfying (3.7c).
-
-\subsection*{Conclusion}
-
-Proposition~3.3 states that, conversely, if there exists a set of functions $V^j(t,x)$ such that conditions (3.7) hold, then the function is indeed equal to the reserve. By explicitly verifying that $V^0(t,x)=x$ satisfies the PDE (3.7a) in both phases, the trivial jump condition (3.7b), and the terminal condition (3.7c), we conclude that
-\[
-  \boxed{V^0(t,x) = x.}
-\]
-The market reserve equals the account value. This is the defining property of a unit-link product: the policyholder bears all investment risk, and the account dynamics are constructed to continuously budget for every mortality and benefit cash flow, making the account the exact self-financing replicating portfolio for all future obligations.
+Since $V_t^0 = 0$, the PDE evaluates perfectly. Having satisfied all three conditions of Proposition~3.3, the verification theorem guarantees our candidate is the unique prospective market reserve. Thus, $V^0(t,x) = x$.
 
