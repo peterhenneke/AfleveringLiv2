@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1773986716.68793 "c:/Users/peter/Desktop/AfleveringLiv2/main.tex" "main.pdf" "main" 1773986718.43659 0
+["pdflatex"] 1774080768.56488 "c:/Users/peter/Desktop/AfleveringLiv2/main.tex" "main.pdf" "main" 1774080769.90981 0
   "C:/Users/peter/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1773982011 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/peter/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecbx1440.pk" 1773551910 40136 1dc71b7b56a04e5806f182f4d450a54a ""
   "C:/Users/peter/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecbx1728.pk" 1773498783 49100 1017d727694538d4e725802d088dbc69 ""
@@ -112,16 +112,16 @@
   "Pictures/SimulationOfAccountPath.png" 1773499155 26564 500df7970e33f4dd3726285181cfc205 ""
   "Pictures/tildeV_0.png" 1773499159 22139 9675fdbcb810deb8859885557652b9e7 ""
   "Sections/exercise_i.tex" 1773500780 838 9bd9eddbe8c7ac59c6cd2afd57c589dd ""
-  "Sections/exercise_ii.tex" 1773500867 26 048f16a2221a9441b0319280cd8c2814 ""
-  "Sections/exercise_iii.tex" 1773500781 588 2827c5b86f68e41288db2480275c28e1 ""
+  "Sections/exercise_ii.tex" 1774080765 158 dc5b9f341dfe7b590be8be30d8547496 ""
+  "Sections/exercise_iii.tex" 1774080765 606 22737f85b5ffddca85eac3707c618430 ""
   "Sections/exercise_iv.tex" 1773986714 2834 dd2fafb2e2f0234530b9f5b6dddf11aa ""
   "Sections/exercise_v.tex" 1773639413 3218 db7dbea68441a1093774046d315c339e ""
   "Sections/exercise_vi.tex" 1773639075 1339 296642d19e72f24b7c1bc1884387452f ""
   "Sections/exercise_vii.tex" 1773567768 1563 829cb23d786659325cfb57350a428a02 ""
-  "c:/Users/peter/Desktop/AfleveringLiv2/main.tex" 1773838976 829 e8a5c32a3e73f957c40afb0569fad31b ""
-  "main.aux" 1773986718 721 a16dd99647ba564317cba23ba465355a "pdflatex"
-  "main.out" 1773986717 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "main.tex" 1773838976 829 e8a5c32a3e73f957c40afb0569fad31b ""
+  "c:/Users/peter/Desktop/AfleveringLiv2/main.tex" 1774080765 866 b55716b316c0d9dbef4338d8b3c8d426 ""
+  "main.aux" 1774080769 721 4fd2e688c0872d730edee6a0c3ce41b8 "pdflatex"
+  "main.out" 1774080769 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.tex" 1774080765 866 b55716b316c0d9dbef4338d8b3c8d426 ""
   (generated)
   "main.aux"
   "main.log"
